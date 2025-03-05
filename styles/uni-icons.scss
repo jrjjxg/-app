@@ -1,0 +1,116 @@
+@font-face {
+  font-family: uniicons;
+  font-weight: normal;
+  font-style: normal;
+  src: url('~@dcloudio/uni-ui/lib/uni-icons/uniicons.ttf') format('truetype');
+}
+
+.uni-icons {
+  font-family: uniicons;
+  text-decoration: none;
+  text-align: center;
+}
+
+.uniui-auth-filled:before {
+  content: "\e6cc";
+}
+
+.uniui-auth:before {
+  content: "\e6cb";
+}
+
+.uniui-chat-filled:before {
+  content: "\e6ce";
+}
+
+.uniui-chat:before {
+  content: "\e6cd";
+}
+
+.uniui-heart-filled:before {
+  content: "\e6d0";
+}
+
+.uniui-heart:before {
+  content: "\e6cf";
+}
+
+.uniui-home-filled:before {
+  content: "\e6d2";
+}
+
+.uniui-home:before {
+  content: "\e6d1";
+}
+
+.uniui-gear-filled:before {
+  content: "\e6d4";
+}
+
+.uniui-gear:before {
+  content: "\e6d3";
+}
+
+.uniui-star-filled:before {
+  content: "\e6d6";
+}
+
+.uniui-star:before {
+  content: "\e6d5";
+}
+
+.uniui-checkbox-filled:before {
+  content: "\e6d8";
+}
+
+.uniui-checkbox:before {
+  content: "\e6d7";
+}
+
+.uniui-search:before {
+  content: "\e6d9";
+}
+
+.uniui-refresh:before {
+  content: "\e6da";
+}
+
+.uniui-moon:before {
+  content: "\e6db";
+}
+
+.uniui-wind-power:before {
+  content: "\e6dc";
+}
+
+.uniui-wifi:before {
+  content: "\e6dd";
+}
+
+.uniui-signal:before {
+  content: "\e6de";
+}
+
+.uniui-battery:before {
+  content: "\e6df";
+}
+
+.uniui-headphones:before {
+  content: "\e6e0";
+}
+
+.uniui-staff:before {
+  content: "\e6e1";
+}
+
+.uniui-videocam:before {
+  content: "\e6e2";
+}
+
+.uniui-bar:before {
+  content: "\e6e3";
+}
+
+.uniui-checkmarkempty:before {
+  content: "\e6e4";
+}

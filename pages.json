@@ -1,0 +1,71 @@
+{
+	"pages": [
+	  {
+		"path": "pages/index/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  },
+	  {
+		"path": "pages/psychological-test/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  },
+	  {
+		"path": "pages/test-detail/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  },
+	  {
+		"path": "pages/test-questions/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  },
+	  {
+		"path": "pages/test-result/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  }
+	],
+	"globalStyle": {
+	  "navigationBarTextStyle": "black",
+	  "navigationBarTitleText": "心灵伙伴",
+	  "navigationBarBackgroundColor": "#F8F8F8",
+	  "backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+	  "color": "#7A7E83",
+	  "selectedColor": "#4F46E5",
+	  "borderStyle": "black",
+	  "backgroundColor": "#ffffff",
+	  "list": [
+		{
+		  "pagePath": "pages/index/index",
+		  "iconPath": "static/images/tabbar/home.png",
+		  "selectedIconPath": "static/images/tabbar/home-active.png",
+		  "text": "首页"
+		},
+		{
+		  "pagePath": "pages/psychological-test/index",
+		  "iconPath": "static/images/tabbar/test.png",
+		  "selectedIconPath": "static/images/tabbar/test-active.png",
+		  "text": "测评"
+		}
+	  ]
+	},
+	"easycom": {
+	  "autoscan": true,
+	  "custom": {
+		"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+	  }
+	}
+  }
