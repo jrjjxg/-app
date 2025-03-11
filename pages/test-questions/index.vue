@@ -114,9 +114,31 @@
             url: `/api/tests/${this.testId}/questions`,
             method: 'GET'
           })
-          this.test = response.data
-          this.totalQuestions = this.test.questions.length
-          this.answers = new Array(this.totalQuestions).fill(null)
+          
+          if (response.code === 200) {
+            // 获取测试标题
+            const testResponse = await request({
+              url: `/api/tests/${this.testId}`,
+              method: 'GET'
+            })
+            
+            if (testResponse.code === 200) {
+              this.test = {
+                title: testResponse.data.name,
+                questions: response.data.map(q => ({
+                  question: q.question,
+                  description: q.description,
+                  options: q.options.map(opt => opt.content)
+                }))
+              }
+              this.totalQuestions = this.test.questions.length
+              this.answers = new Array(this.totalQuestions).fill(null)
+            } else {
+              throw new Error(testResponse.message || '获取测试信息失败')
+            }
+          } else {
+            throw new Error(response.message || '获取测试题目失败')
+          }
         } catch (error) {
           console.error('加载测试题目失败:', error)
           uni.showToast({
@@ -158,18 +180,33 @@
         try {
           uni.showLoading({ title: '计算结果中...' })
           
+          // 准备答案数据，将索引转为键值对格式
+          const answersMap = {}
+          this.answers.forEach((answer, index) => {
+            answersMap[`q${index+1}`] = answer.toString()
+          })
+          
+          // 从缓存获取用户ID，如果没有则使用默认值
+          const userId = uni.getStorageSync('userId') || 'test_user_001'
+          
           const response = await request({
             url: `/api/tests/${this.testId}/submit`,
             method: 'POST',
-            data: {
-              answers: this.answers
-            }
+            header: {
+              'userId': userId  // 添加userId头信息
+            },
+            data: answersMap  // 提交转换后的答案
           })
           
-          // 跳转到结果页面
-          uni.redirectTo({
-            url: `/pages/test-result/index?id=${this.testId}&resultId=${response.data.resultId}`
-          })
+          if (response.code === 200) {
+            // 跳转到结果页面
+            uni.redirectTo({
+              url: `/pages/test-result/index?testId=${this.testId}&resultId=${response.data.id}`
+            })
+            //debug：将 completeTest 方法中跳转到结果页面的 URL 参数 response.data.resultId 改为 response.data.id，解决页面不显示
+          } else {
+            throw new Error(response.message || '提交答案失败')
+          }
         } catch (error) {
           console.error('提交测试答案失败:', error)
           uni.showToast({

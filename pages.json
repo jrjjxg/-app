@@ -4,9 +4,10 @@
 		"path": "pages/index/index",
 		"style": {
 		  "navigationStyle": "custom",
-		  "navigationBarTextStyle": "white"
+		  "navigationBarTitleText": "首页"
 		}
 	  },
+	  
 	  {
 		"path": "pages/psychological-test/index",
 		"style": {
@@ -34,32 +35,78 @@
 		  "navigationStyle": "custom",
 		  "navigationBarTextStyle": "white"
 		}
+	  },
+	  {
+		"path": "pages/mood-tracker/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "white"
+		}
+	  },
+	  {
+		"path": "pages/mood-tracker/record",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "black"
+		}
+	  },
+	  {
+		"path": "pages/mood-tracker/history",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "black"
+		}
+	  },
+	  {
+		"path": "pages/mood-tracker/analysis",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTextStyle": "black"
+		}
+	  },
+	  {
+		"path": "pages/mood-journal/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "心灵笔记"
+		}
 	  }
 	],
 	"globalStyle": {
 	  "navigationBarTextStyle": "black",
 	  "navigationBarTitleText": "心灵伙伴",
 	  "navigationBarBackgroundColor": "#F8F8F8",
-	  "backgroundColor": "#F8F8F8"
+	  "backgroundColor": "#F8F8F8",
+	  "app-plus": {
+		"bounce": "none"
+	  }
 	},
 	"tabBar": {
-	  "color": "#7A7E83",
-	  "selectedColor": "#4F46E5",
-	  "borderStyle": "black",
-	  "backgroundColor": "#ffffff",
+	  "color": "#9CA3AF",
+	  "selectedColor": "#8B5CF6",
+	  "backgroundColor": "#FFFFFF",
+	  "borderStyle": "white",
+	  "blurEffect": "extralight",
+	  "height": "50px",
 	  "list": [
 		{
 		  "pagePath": "pages/index/index",
-		  "iconPath": "static/images/tabbar/home.png",
-		  "selectedIconPath": "static/images/tabbar/home-active.png",
-		  "text": "首页"
+		  "text": "首页",
+		  "iconPath": "static/tabbar/home.png",
+		  "selectedIconPath": "static/tabbar/home-active.png"
 		},
 		{
-		  "pagePath": "pages/psychological-test/index",
-		  "iconPath": "static/images/tabbar/test.png",
-		  "selectedIconPath": "static/images/tabbar/test-active.png",
-		  "text": "测评"
-		}
+		  "pagePath": "pages/mood-journal/index",
+		  "text": "日记",
+		  "iconPath": "static/tabbar/journal.png",
+		  "selectedIconPath": "static/tabbar/journal-active.png"
+		},
+
+		{"pagePath": "pages/psychological-test/index",
+		"iconPath": "static/images/tabbar/test.png",
+		"selectedIconPath": "static/images/tabbar/test-active.png",
+		"text": "测评"
+	}
 	  ]
 	},
 	"easycom": {

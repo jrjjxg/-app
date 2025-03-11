@@ -1,6 +1,7 @@
 import { request } from './request';
 
-// 获取所有测试类型
+// 获取所有测试
+//前端的 fetchAllTests 函数调用了后端的 /api/tests 接口
 export const fetchAllTests = () => {
   return request({
     url: '/api/tests',
@@ -9,6 +10,7 @@ export const fetchAllTests = () => {
 };
 
 // 获取测试详情
+//获取单个测试详情
 export const fetchTestById = (id) => {
   return request({
     url: `/api/tests/${id}`,

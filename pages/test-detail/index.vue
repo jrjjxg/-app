@@ -83,7 +83,7 @@
             @click="startTest"
             :disabled="loading"
           >
-            开始测试
+         
           </button>
         </view>
       </scroll-view>
@@ -113,7 +113,29 @@
             url: `/api/tests/${this.testId}`,
             method: 'GET'
           })
-          this.test = response.data
+          
+          // 处理从后端获取的数据
+          if (response.code === 200) {
+            const data = response.data;
+            this.test = {
+              title: data.name,  // 后端返回的是name
+              icon: data.icon || 'icon-mental-health',
+              time: data.timeMinutes,
+              questionCount: data.questionCount,
+              category: data.category,
+              description: data.description,
+              // 以下是默认值，或从API响应中获取（如果有）
+              completedCount: data.completedCount || 0,
+              suitableFor: data.suitableFor || '所有年龄段人群',
+              instructions: data.instructions || '请仔细阅读每个问题，选择最符合您情况的选项。',
+              about: data.about || `${data.name}是一种评估心理健康状况的专业工具。`,
+              history: data.history,
+              validity: data.validity,
+              interpretation: data.interpretation
+            }
+          } else {
+            throw new Error(response.message || '获取测试详情失败')
+          }
         } catch (error) {
           console.error('加载测试详情失败:', error)
           uni.showToast({
