@@ -7,7 +7,20 @@
 		  "navigationBarTitleText": "首页"
 		}
 	  },
-	  
+	  {
+		"path": "pages/toolbox/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "工具箱"
+		}
+	  },
+	  {
+		"path": "pages/profile/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "我的"
+		}
+	  },
 	  {
 		"path": "pages/psychological-test/index",
 		"style": {
@@ -96,17 +109,23 @@
 		  "selectedIconPath": "static/tabbar/home-active.png"
 		},
 		{
-		  "pagePath": "pages/mood-journal/index",
-		  "text": "日记",
-		  "iconPath": "static/tabbar/journal.png",
-		  "selectedIconPath": "static/tabbar/journal-active.png"
+		  "pagePath": "pages/toolbox/index",
+		  "text": "工具箱",
+		  "iconPath": "static/tabbar/tools.png",
+		  "selectedIconPath": "static/tabbar/tools-active.png"
 		},
-
-		{"pagePath": "pages/psychological-test/index",
-		"iconPath": "static/images/tabbar/test.png",
-		"selectedIconPath": "static/images/tabbar/test-active.png",
-		"text": "测评"
-	}
+		{
+		  "pagePath": "pages/psychological-test/index",
+		  "text": "测评",
+		  "iconPath": "static/tabbar/test.png",
+		  "selectedIconPath": "static/tabbar/test-active.png"
+		},
+		{
+		  "pagePath": "pages/profile/index",
+		  "text": "我的",
+		  "iconPath": "static/tabbar/profile.png",
+		  "selectedIconPath": "static/tabbar/profile-active.png"
+		}
 	  ]
 	},
 	"easycom": {

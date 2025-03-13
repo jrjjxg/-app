@@ -3,9 +3,9 @@
     <!-- 头部 -->
     <view class="bg-gradient-to-r from-pink-500 to-purple-600 px-4 pt-12 pb-6">
       <view class="flex items-center mb-4">
-        <navigator url="/pages/index/index" open-type="navigateBack" hover-class="none">
+        <navigator open-type="navigateBack" delta="1" hover-class="none">
           <view class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
-            <text class="iconfont icon-arrow-left text-white"></text>
+            <uni-icons type="left" size="18" color="#FFFFFF"></uni-icons>
           </view>
         </navigator>
         <text class="text-xl font-bold text-white">情绪追踪</text>
