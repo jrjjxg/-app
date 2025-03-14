@@ -22,6 +22,27 @@
 		}
 	  },
 	  {
+		"path": "pages/community/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "社区"
+		}
+	  },
+	  {
+		"path": "pages/community/post-detail",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "帖子详情"
+		}
+	  },
+	  {
+		"path": "pages/community/publish",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "发布帖子"
+		}
+	  },
+	  {
 		"path": "pages/psychological-test/index",
 		"style": {
 		  "navigationStyle": "custom",
@@ -115,10 +136,16 @@
 		  "selectedIconPath": "static/tabbar/tools-active.png"
 		},
 		{
-		  "pagePath": "pages/psychological-test/index",
-		  "text": "测评",
-		  "iconPath": "static/tabbar/test.png",
-		  "selectedIconPath": "static/tabbar/test-active.png"
+		  "pagePath": "pages/community/index",
+		  "text": "社区",
+		  "iconPath": "static/tabbar/community.png",
+		  "selectedIconPath": "static/tabbar/community-active.png"
+		},
+		{
+			"pagePath": "pages/psychological-test/index",
+			"text": "测评",
+			"iconPath": "static/tabbar/test.png",
+			"selectedIconPath": "static/tabbar/test-active.png"
 		},
 		{
 		  "pagePath": "pages/profile/index",

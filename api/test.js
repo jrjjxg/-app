@@ -56,3 +56,20 @@ export const fetchTestResultDetail = (resultId) => {
     method: 'GET'
   });
 };
+
+// 获取所有测试类型
+export function getAllTestTypes() {
+  return request({
+    url: '/api/tests',
+    method: 'GET'
+  });
+}
+
+// 获取测试完成人数
+export function getTestCompletionCounts(testTypeIds) {
+  const queryParams = testTypeIds.map(id => `testTypeId=${encodeURIComponent(id)}`).join('&');
+  return request({
+    url: `/api/tests/completion-counts?${queryParams}`,
+    method: 'GET'
+  });
+}
