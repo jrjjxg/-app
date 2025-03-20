@@ -1,492 +1,1084 @@
 <template>
-  <view class="flex flex-col h-full bg-gray-50">
-    <!-- 头部 -->
-    <view class="bg-white px-4 pt-12 pb-4 border-b border-gray-100">
-      <view class="flex items-center">
-        <view @click="goBack" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-          <uni-icons type="back" size="18" color="#6B7280"></uni-icons>
-        </view>
-        <text class="text-lg font-bold text-gray-800">帖子详情</text>
+  <view class="post-detail-container">
+    <!-- 顶部导航栏 -->
+    <view class="header">
+      <view class="back-icon" @click="goBack">
+        <uni-icons type="back" size="20"></uni-icons>
+      </view>
+      <view class="title">帖子详情</view>
+      <view class="more-icon" @click="showActionSheet">
+        <uni-icons type="more-filled" size="20"></uni-icons>
       </view>
     </view>
-    
-    <!-- 内容区域 -->
-    <scroll-view scroll-y class="flex-1 px-4 py-3 pb-20">
-      <!-- 加载状态 -->
-      <view v-if="loading" class="py-10 flex justify-center">
-        <text class="text-gray-500">加载中...</text>
-      </view>
-      
-      <!-- 帖子详情 -->
-      <block v-else>
-        <view class="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
-          <!-- 用户信息 -->
-          <view class="p-4 flex items-center">
-            <image :src="post.author.avatar" class="w-10 h-10 rounded-full bg-gray-200"></image>
-            <view class="ml-3 flex-1">
-              <view class="flex items-center">
-                <text class="font-medium text-gray-800">{{ post.author.nickname }}</text>
-                <view v-if="post.author.isExpert" class="ml-2 px-1.5 py-0.5 bg-blue-100 rounded text-xs text-blue-600">专家</view>
-              </view>
-              <text class="text-xs text-gray-500">{{ formatTime(post.createTime) }}</text>
+
+    <!-- 加载中 -->
+    <view v-if="loading" class="loading-container">
+      <uni-load-more status="loading"></uni-load-more>
+    </view>
+
+    <!-- 帖子内容 -->
+    <scroll-view v-else scroll-y class="post-content-scroll" refresher-enabled :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh" @scrolltolower="loadMoreComments">
+      <view class="post-content-wrapper">
+        <!-- 用户信息 -->
+        <view class="post-author">
+          <image :src="post.author.avatar || '/static/images/default-avatar.png'" class="author-avatar"
+            @click="goToUserProfile(post.author.id)"></image>
+          <view class="author-info">
+            <view class="author-name-wrapper">
+              <text class="author-name">{{ post.author.nickname || post.author.username }}</text>
+              <view v-if="post.author.isExpert" class="expert-tag">专家</view>
             </view>
-            <view class="px-2 py-1 bg-gray-100 rounded-full">
-              <text class="text-xs text-gray-600">关注</text>
-            </view>
+            <text class="post-time">{{ formatTime(post.createTime) }}</text>
           </view>
-          
-          <!-- 帖子内容 -->
-          <view class="px-4 pb-4">
-            <text class="font-medium text-gray-800 text-xl mb-3 block">{{ post.title }}</text>
-            <text class="text-gray-600 mb-4 leading-relaxed">{{ post.content }}</text>
-            
-            <!-- 帖子图片 -->
-            <view v-if="post.images && post.images.length > 0" class="mb-4">
-              <image 
-                v-for="(img, imgIndex) in post.images" 
-                :key="imgIndex"
-                :src="img"
-                mode="widthFix"
-                class="w-full rounded-lg mb-2"
-              ></image>
-            </view>
-            
-            <!-- 帖子标签 -->
-            <view v-if="post.tags && post.tags.length > 0" class="flex flex-wrap mb-4">
-              <view 
-                v-for="(tag, tagIndex) in post.tags" 
-                :key="tagIndex"
-                class="mr-2 mb-2 px-2 py-0.5 bg-purple-100 rounded text-xs text-purple-600"
-              >
-                {{ tag }}
-              </view>
-            </view>
-            
-            <!-- 互动数据 -->
-            <view class="flex items-center justify-between py-3 border-t border-gray-100">
-              <view class="flex items-center">
-                <view class="flex items-center mr-6" @click="toggleLike">
-                  <uni-icons :type="post.isLiked ? 'heart-filled' : 'heart'" :color="post.isLiked ? '#EC4899' : '#9CA3AF'" size="20"></uni-icons>
-                  <text class="ml-1 text-sm" :class="post.isLiked ? 'text-pink-500' : 'text-gray-500'">{{ post.likeCount }}</text>
-                </view>
-                <view class="flex items-center mr-6">
-                  <uni-icons type="chat" color="#9CA3AF" size="20"></uni-icons>
-                  <text class="ml-1 text-sm text-gray-500">{{ post.commentCount }}</text>
-                </view>
-                <view class="flex items-center">
-                  <uni-icons type="star" color="#9CA3AF" size="20"></uni-icons>
-                  <text class="ml-1 text-sm text-gray-500">收藏</text>
-                </view>
-              </view>
-              <view class="flex items-center">
-                <uni-icons type="share" color="#9CA3AF" size="20"></uni-icons>
-                <text class="ml-1 text-sm text-gray-500">分享</text>
-              </view>
-            </view>
+          <view v-if="post.author.id !== currentUserId" class="follow-btn" :class="{ active: post.author.isFollowed }"
+            @click="toggleFollow">
+            {{ post.author.isFollowed ? '已关注' : '关注' }}
           </view>
         </view>
-        
+
+        <!-- 帖子标题和内容 -->
+        <view class="post-main">
+          <view v-if="post.title" class="post-title">{{ post.title }}</view>
+          <view class="post-text">{{ post.content }}</view>
+
+          <!-- 帖子图片 -->
+          <view v-if="post.images && post.images.length > 0" class="post-images">
+            <image v-for="(img, index) in post.images" :key="index" :src="img" mode="widthFix" class="post-image"
+              @click="previewImage(index)"></image>
+          </view>
+
+          <!-- 帖子标签 -->
+          <view v-if="post.tags && post.tags.length > 0" class="post-tags">
+            <view v-for="tag in post.tags" :key="tag" class="tag-item">
+              {{ tag }}
+            </view>
+          </view>
+
+          <!-- 帖子来源 -->
+          <view v-if="post.source" class="post-source">
+            <view class="source-title">{{ post.source.title }}</view>
+            <view class="source-content">{{ post.source.content }}</view>
+          </view>
+        </view>
+
+        <!-- 帖子互动数据 -->
+        <view class="post-stats">
+          <view class="stat-item">
+            <uni-icons type="eye" size="20"></uni-icons>
+            <text>{{ post.viewCount || 0 }}</text>
+          </view>
+          <view class="stat-item" @click="toggleLike">
+            <uni-icons :type="post.isLiked ? 'heart-filled' : 'heart'" size="20" color="#ff6b6b"></uni-icons>
+            <text>{{ post.likeCount || 0 }}</text>
+          </view>
+          <view class="stat-item" @click="focusCommentInput">
+            <uni-icons type="chat" size="20"></uni-icons>
+            <text>{{ post.commentCount || 0 }}</text>
+          </view>
+          <view class="stat-item" @click="sharePost">
+            <uni-icons type="redo" size="20"></uni-icons>
+            <text>分享</text>
+          </view>
+        </view>
+
         <!-- 评论区 -->
-        <view class="bg-white rounded-xl shadow-sm overflow-hidden">
-          <view class="p-4 border-b border-gray-100">
-            <text class="font-bold text-gray-800">评论 ({{ post.commentCount }})</text>
-          </view>
-          
+        <view class="comment-section">
+          <view class="section-title">评论 ({{ post.commentCount || 0 }})</view>
+
           <!-- 评论列表 -->
-          <view v-if="comments.length > 0">
-            <view 
-              v-for="(comment, index) in comments" 
-              :key="comment.id"
-              class="p-4 border-b border-gray-100"
-            >
-              <view class="flex">
-                <image :src="comment.author.avatar" class="w-8 h-8 rounded-full bg-gray-200"></image>
-                <view class="ml-3 flex-1">
-                  <view class="flex items-center mb-1">
-                    <text class="font-medium text-gray-800 text-sm">{{ comment.author.nickname }}</text>
-                    <view v-if="comment.author.isExpert" class="ml-2 px-1 py-0.5 bg-blue-100 rounded-sm text-xs text-blue-600">专家</view>
-                    <text class="ml-auto text-xs text-gray-500">{{ formatTime(comment.createTime) }}</text>
+          <view v-if="comments.length === 0" class="empty-comment">
+            <image src="/static/images/empty-comment.png" mode="aspectFit" class="empty-image"></image>
+            <text class="empty-text">暂无评论，快来抢沙发吧</text>
+          </view>
+
+          <view v-else class="comment-list">
+            <view v-for="(comment, index) in comments" :key="comment.id" class="comment-item">
+              <!-- 评论用户头像 -->
+              <image :src="comment.avatar || '/static/images/default-avatar.png'" class="comment-avatar"
+                @click="goToUserProfile(comment.userId)"></image>
+
+              <view class="comment-content">
+                <!-- 评论用户名 -->
+                <view class="comment-user">
+                  <text class="comment-username" @click="goToUserProfile(comment.userId)">
+                    {{ comment.username || '用户' }}
+                  </text>
+                  <text class="comment-time">{{ formatTime(comment.createTime) }}</text>
+                </view>
+
+                <!-- 评论内容 -->
+                <view class="comment-text">{{ comment.content }}</view>
+
+                <!-- 评论操作 -->
+                <view class="comment-actions">
+                  <!-- 其他操作按钮 -->
+                  <view class="action-item" @click="replyComment(comment)">
+                    <uni-icons type="chat" size="16"></uni-icons>
+                    <text>回复</text>
                   </view>
-                  <text class="text-gray-600 text-sm mb-2">{{ comment.content }}</text>
-                  
-                  <!-- 评论操作 -->
-                  <view class="flex items-center">
-                    <view class="flex items-center mr-4" @click="toggleCommentLike(index)">
-                      <uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" :color="comment.isLiked ? '#EC4899' : '#9CA3AF'" size="14"></uni-icons>
-                      <text class="ml-1 text-xs" :class="comment.isLiked ? 'text-pink-500' : 'text-gray-500'">{{ comment.likeCount }}</text>
-                    </view>
-                    <view class="flex items-center" @click="replyToComment(comment)">
-                      <uni-icons type="chat" color="#9CA3AF" size="14"></uni-icons>
-                      <text class="ml-1 text-xs text-gray-500">回复</text>
-                    </view>
+                  <!-- 点赞按钮 -->
+                  <view class="action-item" @click="likeComment(comment)">
+                    <uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" size="16"
+                      :color="comment.isLiked ? '#ff6b6b' : '#999'"></uni-icons>
+                    <text>{{ comment.likeCount || 0 }}</text>
                   </view>
-                  
-                  <!-- 回复列表 -->
-                  <view v-if="comment.replies && comment.replies.length > 0" class="mt-3 bg-gray-50 rounded-lg p-3">
-                    <view 
-                      v-for="(reply, replyIndex) in comment.replies" 
-                      :key="replyIndex"
-                      class="mb-2 last:mb-0"
-                    >
-                      <view class="flex items-start">
-                        <image :src="reply.author.avatar" class="w-6 h-6 rounded-full bg-gray-200"></image>
-                        <view class="ml-2 flex-1">
-                          <view class="flex items-center">
-                            <text class="font-medium text-gray-800 text-xs">{{ reply.author.nickname }}</text>
-                            <text class="ml-1 text-xs text-gray-500">回复</text>
-                            <text class="ml-1 font-medium text-gray-800 text-xs">{{ reply.replyTo }}</text>
-                          </view>
-                          <text class="text-gray-600 text-xs">{{ reply.content }}</text>
-                        </view>
-                        <text class="text-xs text-gray-500 ml-2">{{ formatTime(reply.createTime) }}</text>
-                      </view>
-                    </view>
-                    
-                    <view v-if="comment.replyCount > comment.replies.length" class="mt-2">
-                      <text class="text-xs text-purple-500">查看全部{{ comment.replyCount }}条回复</text>
-                    </view>
+                </view>
+
+                <!-- 回复列表 -->
+                <view v-if="comment.children && comment.children.length > 0" class="reply-list">
+                  <view v-for="(reply, replyIndex) in comment.children" :key="reply.id" class="reply-item">
+                    <text class="reply-username" @click="goToUserProfile(reply.userId)">{{ reply.username || '用户'
+                      }}</text>
+                    <text v-if="reply.replyToUserId && reply.replyToUserId !== comment.userId" class="reply-to">
+                      回复 <text class="reply-to-username" @click="goToUserProfile(reply.replyToUserId)">{{
+                        reply.replyToUsername || '用户' }}</text>
+                    </text>
+                    <text class="reply-content">{{ reply.content }}</text>
+                  </view>
+
+                  <!-- 查看更多回复 -->
+                  <view v-if="comment.hasMoreReplies" class="view-more-replies" @click="loadMoreReplies(comment)">
+                    查看更多回复
                   </view>
                 </view>
               </view>
             </view>
           </view>
-          
-          <!-- 无评论状态 -->
-          <view v-else class="p-8 flex flex-col items-center justify-center">
-            <uni-icons type="chat" size="40" color="#D1D5DB"></uni-icons>
-            <text class="mt-3 text-gray-500">暂无评论，快来发表你的看法吧</text>
-          </view>
-        </view>
-      </block>
-    </scroll-view>
-    
-    <!-- 底部评论框 -->
-    <view class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2">
-      <view class="flex items-center">
-        <view class="flex-1 bg-gray-100 rounded-full px-4 py-2 flex items-center">
-          <input 
-            type="text" 
-            class="flex-1" 
-            :placeholder="commentPlaceholder"
-            v-model="commentContent"
-          />
-        </view>
-        <view 
-          class="ml-2 px-4 py-2 bg-purple-500 rounded-full"
-          :class="commentContent.trim() ? 'opacity-100' : 'opacity-50'"
-          @click="submitComment"
-        >
-          <text class="text-white">发送</text>
+
+          <!-- 加载更多评论 -->
+          <uni-load-more v-if="comments.length > 0 && hasMoreComments" :status="loadMoreStatus"></uni-load-more>
         </view>
       </view>
+    </scroll-view>
+
+    <!-- 评论输入框 -->
+    <view class="comment-input-area">
+      <input class="comment-input" type="text" v-model="commentContent" :placeholder="commentPlaceholder"
+        confirm-type="send" :focus="inputFocus" @confirm="submitComment" @focus="onInputFocus" @blur="onInputBlur" />
+      <view class="send-btn" :class="{ disabled: !commentContent.trim() }" @click="submitComment">发送</view>
     </view>
   </view>
 </template>
 
 <script>
+import { getPostDetail, deletePost } from '@/api/post';
+import { getPostComments, getCommentReplies, createComment, deleteComment } from '@/api/comment';
+import { toggleLike, checkUserLiked } from '@/api/like';
+import { toggleFollow, checkFollowed } from '@/api/follow';
+import { getUserInfo } from '@/api/user';
+
 export default {
   data() {
     return {
-      loading: true,
       postId: '',
-      post: null,
+      post: {
+        author: {}
+      },
       comments: [],
+      loading: true,
+      refreshing: false,
+      commentLoading: false,
+      commentPageNum: 1,
+      commentPageSize: 10,
+      hasMoreComments: true,
+      currentUserId: '',
       commentContent: '',
-      commentPlaceholder: '写下你的评论...',
-      replyingTo: null
-    }
+      commentPlaceholder: '写评论...',
+      inputFocus: false,
+      replyTo: null,
+      showCommentInput: false,
+      actionSheetItems: [],
+    };
   },
   onLoad(options) {
-    this.postId = options.id
-    this.loadPostDetail()
+    this.postId = options.id;
+    // 获取当前用户信息
+    this.getCurrentUser();
+    // 加载帖子详情
+    this.loadPostDetail();
+    // 加载评论
+    this.loadComments();
   },
   methods: {
-    goBack() {
-      uni.navigateBack()
+    // 获取当前用户信息
+    async getCurrentUser() {
+      try {
+        const res = await getUserInfo();
+        if (res.code === 200 && res.data) {
+          this.currentUserId = res.data.id;
+        }
+      } catch (error) {
+        console.error('获取用户信息失败', error);
+      }
     },
-    
+
     // 加载帖子详情
-    loadPostDetail() {
-      this.loading = true
-      
-      // 模拟网络请求
-      setTimeout(() => {
-        // 模拟数据
-        this.post = this.getMockPost(this.postId)
-        this.comments = this.getMockComments()
-        
-        this.loading = false
-      }, 1000)
+    async loadPostDetail() {
+      try {
+        this.loading = true;
+        const res = await getPostDetail(this.postId);
+
+        if (res.code === 200) {
+          let post = res.data;
+
+          // 转换数据结构，创建author对象
+          if (!post.author) {
+            post.author = {
+              id: post.userId,
+              nickname: post.username || '用户',
+              avatar: post.avatar || '/static/images/default-avatar.png',
+              isExpert: post.isExpert || false
+            };
+          }
+
+          this.post = post;
+
+          // 检查是否已点赞
+          if (this.currentUserId) {
+            const likeRes = await checkUserLiked('post', this.postId);
+            this.post.isLiked = likeRes.data;
+
+            // 检查是否已关注作者
+            if (this.post.author && this.post.author.id !== this.currentUserId) {
+              const followRes = await checkFollowed(this.post.author.id);
+              this.post.author.isFollowed = followRes.data;
+            }
+          }
+
+          // 设置操作菜单
+          this.setupActionSheet();
+        }
+      } catch (error) {
+        console.error('加载帖子详情失败:', error);
+        uni.showToast({
+          title: '加载失败',
+          icon: 'none'
+        });
+      } finally {
+        this.loading = false;
+      }
     },
-    
+
+    // 加载评论
+    async loadComments(refresh = false) {
+      if (refresh) {
+        this.commentPageNum = 1;
+        this.hasMoreComments = true;
+        this.comments = [];
+      }
+
+      if (!this.hasMoreComments || this.commentLoading) return;
+
+      this.commentLoading = true;
+      try {
+        const res = await getPostComments(this.postId, this.commentPageNum, this.commentPageSize);
+        if (res.code === 200) {
+          const newComments = res.data.records || [];
+
+          // 检查评论是否已点赞
+          if (this.currentUserId) {
+            for (const comment of newComments) {
+              const likeRes = await checkUserLiked('comment', comment.id);
+              comment.isLiked = likeRes.data;
+
+              // 加载评论的回复
+              if (comment.replyCount > 0) {
+                const replyRes = await getCommentReplies(comment.id, 1, 3);
+                comment.children = replyRes.data.records || [];
+                comment.hasMoreReplies = comment.replyCount > comment.children.length;
+              } else {
+                comment.children = [];
+                comment.hasMoreReplies = false;
+              }
+            }
+          }
+
+          this.comments = [...this.comments, ...newComments];
+          this.hasMoreComments = newComments.length === this.commentPageSize;
+          this.commentPageNum++;
+        }
+      } catch (error) {
+        console.error('获取评论失败', error);
+        uni.showToast({
+          title: '获取评论失败',
+          icon: 'none'
+        });
+      } finally {
+        this.commentLoading = false;
+      }
+    },
+
+    // 设置操作菜单
+    setupActionSheet() {
+      this.actionSheetItems = [];
+
+      // 分享
+      this.actionSheetItems.push({
+        text: '分享',
+        icon: 'redo'
+      });
+
+      // 举报
+      this.actionSheetItems.push({
+        text: '举报',
+        icon: 'info'
+      });
+
+      // 如果是帖子作者，添加删除选项
+      if (this.currentUserId && this.post.author && this.post.author.id === this.currentUserId) {
+        this.actionSheetItems.push({
+          text: '删除',
+          icon: 'trash',
+          color: '#ff0000'
+        });
+      }
+    },
+
+    // 显示操作菜单
+    showActionSheet() {
+      uni.showActionSheet({
+        itemList: this.actionSheetItems.map(item => item.text),
+        success: res => {
+          const index = res.tapIndex;
+          const action = this.actionSheetItems[index];
+
+          if (action.text === '删除') {
+            this.confirmDeletePost();
+          } else if (action.text === '举报') {
+            this.reportPost();
+          } else if (action.text === '分享') {
+            this.sharePost();
+          }
+        }
+      });
+    },
+
+    // 确认删除帖子
+    confirmDeletePost() {
+      uni.showModal({
+        title: '确认删除',
+        content: '确定要删除这篇帖子吗？删除后无法恢复。',
+        confirmColor: '#ff0000',
+        success: async res => {
+          if (res.confirm) {
+            await this.deletePost();
+          }
+        }
+      });
+    },
+
+    // 删除帖子
+    async deletePost() {
+      try {
+        const res = await deletePost(this.postId);
+        if (res.code === 200) {
+          uni.showToast({
+            title: '删除成功',
+            icon: 'success'
+          });
+
+          setTimeout(() => {
+            uni.navigateBack();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('删除帖子失败', error);
+        uni.showToast({
+          title: '删除失败，请重试',
+          icon: 'none'
+        });
+      }
+    },
+
+    // 举报帖子
+    reportPost() {
+      uni.showToast({
+        title: '举报功能开发中',
+        icon: 'none'
+      });
+    },
+
+    // 分享帖子
+    sharePost() {
+      uni.showToast({
+        title: '分享功能开发中',
+        icon: 'none'
+      });
+    },
+
     // 点赞/取消点赞
-    toggleLike() {
-      if (!this.post) return
-      
-      this.post.isLiked = !this.post.isLiked
-      this.post.likeCount += this.post.isLiked ? 1 : -1
-      
-      // 实际应用中，这里应该调用API更新点赞状态
-      // this.updateLikeStatus(this.postId, this.post.isLiked)
+    async toggleLike() {
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      try {
+        const res = await toggleLike('post', this.postId);
+        if (res.code === 200) {
+          this.post.isLiked = res.data;
+          this.post.likeCount = this.post.isLiked
+            ? (this.post.likeCount || 0) + 1
+            : Math.max((this.post.likeCount || 0) - 1, 0);
+
+          uni.showToast({
+            title: this.post.isLiked ? '点赞成功' : '已取消点赞',
+            icon: 'none'
+          });
+        }
+      } catch (error) {
+        console.error('点赞操作失败', error);
+        uni.showToast({
+          title: '操作失败，请重试',
+          icon: 'none'
+        });
+      }
     },
-    
+
+    // 关注/取消关注
+    async toggleFollow() {
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      try {
+        const res = await toggleFollow(this.post.author.id);
+        if (res.code === 200) {
+          this.post.author.isFollowed = res.data;
+
+          uni.showToast({
+            title: this.post.author.isFollowed ? '关注成功' : '已取消关注',
+            icon: 'none'
+          });
+        }
+      } catch (error) {
+        console.error('关注操作失败', error);
+        uni.showToast({
+          title: '操作失败，请重试',
+          icon: 'none'
+        });
+      }
+    },
+
     // 评论点赞/取消点赞
-    toggleCommentLike(index) {
-      const comment = this.comments[index]
-      if (!comment) return
-      
-      comment.isLiked = !comment.isLiked
-      comment.likeCount += comment.isLiked ? 1 : -1
-      
-      // 实际应用中，这里应该调用API更新评论点赞状态
-      // this.updateCommentLikeStatus(comment.id, comment.isLiked)
+    async toggleCommentLike(comment) {
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      try {
+        const res = await toggleLike('comment', comment.id);
+        if (res.code === 200) {
+          comment.isLiked = res.data;
+          comment.likeCount = comment.isLiked
+            ? (comment.likeCount || 0) + 1
+            : Math.max((comment.likeCount || 0) - 1, 0);
+        }
+      } catch (error) {
+        console.error('评论点赞操作失败', error);
+        uni.showToast({
+          title: '操作失败，请重试',
+          icon: 'none'
+        });
+      }
     },
-    
+
     // 回复评论
     replyToComment(comment) {
-      this.replyingTo = comment
-      this.commentPlaceholder = `回复 ${comment.author.nickname}：`
-      // 自动聚焦输入框
-      // 由于uni-app的限制，这里可能需要使用DOM操作或其他方式实现
-    },
-    
-    // 提交评论
-    submitComment() {
-      if (!this.commentContent.trim()) return
-      
-      // 模拟提交评论
-      if (this.replyingTo) {
-        // 回复评论
-        const reply = {
-          id: Date.now().toString(),
-          content: this.commentContent,
-          createTime: new Date().toISOString(),
-          author: {
-            id: 'current-user',
-            nickname: '我',
-            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-            isExpert: false
-          },
-          replyTo: this.replyingTo.author.nickname
-        }
-        
-        // 如果回复列表不存在，创建一个
-        if (!this.replyingTo.replies) {
-          this.replyingTo.replies = []
-        }
-        
-        // 添加回复
-        this.replyingTo.replies.unshift(reply)
-        this.replyingTo.replyCount = (this.replyingTo.replyCount || 0) + 1
-        
-        // 更新帖子评论数
-        this.post.commentCount++
-      } else {
-        // 发表新评论
-        const newComment = {
-          id: Date.now().toString(),
-          content: this.commentContent,
-          createTime: new Date().toISOString(),
-          author: {
-            id: 'current-user',
-            nickname: '我',
-            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-            isExpert: false
-          },
-          likeCount: 0,
-          isLiked: false,
-          replyCount: 0,
-          replies: []
-        }
-        
-        // 添加到评论列表
-        this.comments.unshift(newComment)
-        
-        // 更新帖子评论数
-        this.post.commentCount++
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
       }
-      
-      // 重置评论框
-      this.commentContent = ''
-      this.commentPlaceholder = '写下你的评论...'
-      this.replyingTo = null
-      
-      // 实际应用中，这里应该调用API提交评论
-      // this.submitCommentToServer(this.postId, this.commentContent, this.replyingTo?.id)
+
+      this.replyTo = {
+        commentId: comment.id,
+        userId: comment.userId,
+        nickname: comment.username
+      };
+
+      this.commentPlaceholder = `回复 ${comment.username}`;
+      this.focusCommentInput();
     },
-    
+
+    // 发布评论
+    async submitComment() {
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      if (!this.commentContent.trim()) {
+        return;
+      }
+
+      try {
+        let params = {
+          postId: this.postId,
+          content: this.commentContent
+        };
+
+        // 如果是回复评论
+        if (this.replyTo) {
+          params.parentId = this.replyTo.commentId;
+          params.replyUserId = this.replyTo.userId;
+        }
+
+        const res = await createComment(params);
+
+        if (res.code === 200) {
+          uni.showToast({
+            title: '评论成功',
+            icon: 'success'
+          });
+
+          // 清空输入框
+          this.commentContent = '';
+          this.replyTo = null;
+          this.commentPlaceholder = '写评论...';
+
+          // 刷新评论列表
+          this.refreshComments();
+        }
+      } catch (error) {
+        console.error('提交评论失败', error);
+        uni.showToast({
+          title: '评论失败，请重试',
+          icon: 'none'
+        });
+      }
+    },
+
+    // 刷新评论列表
+    refreshComments() {
+      this.commentPageNum = 1;
+      this.comments = [];
+      this.hasMoreComments = true;
+      this.loadComments(true);
+    },
+
+    // 删除评论
+    async deleteComment(commentId) {
+      uni.showModal({
+        title: '确认删除',
+        content: '确定要删除这条评论吗？',
+        success: async res => {
+          if (res.confirm) {
+            try {
+              const res = await deleteComment(commentId);
+              if (res.code === 200) {
+                uni.showToast({
+                  title: '删除成功',
+                  icon: 'success'
+                });
+
+                // 从列表中移除评论
+                const index = this.comments.findIndex(c => c.id === commentId);
+                if (index !== -1) {
+                  this.comments.splice(index, 1);
+                  // 更新评论数
+                  this.post.commentCount = Math.max((this.post.commentCount || 0) - 1, 0);
+                }
+              }
+            } catch (error) {
+              console.error('删除评论失败', error);
+              uni.showToast({
+                title: '删除失败，请重试',
+                icon: 'none'
+              });
+            }
+          }
+        }
+      });
+    },
+
+    // 加载更多回复
+    async loadMoreReplies(comment) {
+      try {
+        const currentReplies = comment.children.length;
+        const res = await getCommentReplies(comment.id, 1, comment.replyCount);
+        if (res.code === 200) {
+          comment.children = res.data.records || [];
+          comment.hasMoreReplies = false;
+        }
+      } catch (error) {
+        console.error('加载回复失败', error);
+        uni.showToast({
+          title: '加载失败，请重试',
+          icon: 'none'
+        });
+      }
+    },
+
+    // 聚焦评论输入框
+    focusCommentInput() {
+      if (!this.currentUserId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
+      this.commentPlaceholder = this.replyTo
+        ? `回复 ${this.replyTo.nickname}`
+        : '写评论...';
+
+      this.inputFocus = true;
+      console.log('尝试聚焦输入框');
+    },
+
+    // 取消回复
+    cancelReply() {
+      this.replyTo = null;
+      this.commentPlaceholder = '写评论...';
+    },
+
+    // 预览图片
+    previewImage(index) {
+      uni.previewImage({
+        urls: this.post.images,
+        current: this.post.images[index]
+      });
+    },
+
+    // 下拉刷新
+    onRefresh() {
+      this.refreshing = true;
+      this.loadPostDetail();
+      this.commentPageNum = 1;
+      this.comments = [];
+      this.loadComments();
+    },
+
+    // 加载更多评论
+    loadMoreComments() {
+      this.loadComments();
+    },
+
+    // 返回上一页
+    goBack() {
+      uni.navigateBack();
+    },
+
+    // 跳转到用户主页
+    goToUserProfile(userId) {
+      uni.navigateTo({
+        url: `/pages/community/user-profile?id=${userId}`
+      });
+    },
     // 格式化时间
     formatTime(time) {
-      if (!time) return ''
-      
-      const now = new Date()
-      const postTime = new Date(time)
-      const diff = now - postTime
-      
+      if (!time) return '';
+
+      const now = new Date();
+      const postTime = new Date(time);
+      const diff = now - postTime;
+
       // 小于1分钟
       if (diff < 60 * 1000) {
-        return '刚刚'
+        return '刚刚';
       }
-      
+
       // 小于1小时
       if (diff < 60 * 60 * 1000) {
-        return `${Math.floor(diff / (60 * 1000))}分钟前`
+        return `${Math.floor(diff / (60 * 1000))}分钟前`;
       }
-      
+
       // 小于24小时
       if (diff < 24 * 60 * 60 * 1000) {
-        return `${Math.floor(diff / (60 * 60 * 1000))}小时前`
+        return `${Math.floor(diff / (60 * 60 * 1000))}小时前`;
       }
-      
+
       // 小于30天
       if (diff < 30 * 24 * 60 * 60 * 1000) {
-        return `${Math.floor(diff / (24 * 60 * 60 * 1000))}天前`
+        return `${Math.floor(diff / (24 * 60 * 60 * 1000))}天前`;
       }
-      
+
       // 大于30天
-      const year = postTime.getFullYear()
-      const month = postTime.getMonth() + 1
-      const day = postTime.getDate()
-      return `${year}-${month}-${day}`
+      const year = postTime.getFullYear();
+      const month = postTime.getMonth() + 1;
+      const day = postTime.getDate();
+      return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
     },
-    
-    // 获取模拟帖子数据
-    getMockPost(postId) {
-      const mockPosts = {
-        '1': {
-          id: '1',
-          title: '如何应对工作中的焦虑情绪？',
-          content: '最近工作压力很大，经常感到焦虑和紧张，尤其是在面对截止日期时。我尝试了一些呼吸练习，但效果不是很明显。有没有人能分享一些有效的方法来缓解工作焦虑？\n\n我注意到当我感到焦虑时，会出现心跳加速、呼吸急促、注意力难以集中等症状，这严重影响了我的工作效率和生活质量。我希望能找到一些实用的方法来管理这些症状，重新找回平静和专注。',
-          createTime: new Date(Date.now() - 3600000).toISOString(),
-          author: {
-            id: '101',
-            nickname: '平静的湖',
-            avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-            isExpert: false
-          },
-          images: [],
-          tags: ['焦虑', '工作压力', '求助'],
-          likeCount: 28,
-          commentCount: 5,
-          isLiked: false
-        },
-        '2': {
-          id: '2',
-          title: '分享：冥想如何改变了我的生活',
-          content: '坚持冥想练习三个月后，我发现自己的情绪稳定了很多，焦虑减轻，睡眠质量也提高了。想和大家分享我的冥想心得和一些适合初学者的冥想方法。\n\n我是从每天早上10分钟的呼吸冥想开始的，逐渐增加到20分钟，现在已经能够保持30分钟的专注冥想。最大的变化是我不再被负面情绪所控制，能够以更平静的心态面对生活中的挑战。\n\n对于初学者，我建议从短时间的引导冥想开始，可以使用一些冥想App如Headspace或Calm，它们提供了很好的入门指导。保持耐心和持续练习是关键，效果会随着时间慢慢显现。',
-          createTime: new Date(Date.now() - 86400000).toISOString(),
-          author: {
-            id: '102',
-            nickname: '心灵导师',
-            avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-            isExpert: true
-          },
-          images: [
-            'https://images.unsplash.com/photo-1508672019048-805c876b67e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            'https://images.unsplash.com/photo-1515023115689-589c33041d3c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            'https://images.unsplash.com/photo-1470777639313-60af88918203?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-          ],
-          tags: ['冥想', '心得分享', '减压'],
-          likeCount: 156,
-          commentCount: 42,
-          isLiked: true
-        }
-      }
-      
-      return mockPosts[postId] || mockPosts['1']
+    onInputFocus() {
+      this.inputFocus = true;
+      console.log('输入框获取焦点');
     },
-    
-    // 获取模拟评论数据
-    getMockComments() {
-      return [
-        {
-          id: '101',
-          content: '我也经常感到工作焦虑，尝试了正念冥想后有很大改善。每天花10分钟进行深呼吸和身体扫描，帮助我更好地觉察自己的情绪变化，不再被焦虑所控制。',
-          createTime: new Date(Date.now() - 1800000).toISOString(),
-          author: {
-            id: '201',
-            nickname: '心灵旅者',
-            avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
-            isExpert: false
-          },
-          likeCount: 15,
-          isLiked: false,
-          replyCount: 2,
-          replies: [
-            {
-              id: '301',
-              content: '正念冥想确实很有效，我推荐"正念减压"这个方法，它结合了冥想和认知疗法，对工作焦虑特别有帮助。',
-              createTime: new Date(Date.now() - 1500000).toISOString(),
-              author: {
-                id: '401',
-                nickname: '心理顾问',
-                avatar: 'https://randomuser.me/api/portraits/men/41.jpg',
-                isExpert: true
-              },
-              replyTo: '心灵旅者'
-            },
-            {
-              id: '302',
-              content: '谢谢分享！请问有推荐的冥想App吗？',
-              createTime: new Date(Date.now() - 900000).toISOString(),
-              author: {
-                id: '101',
-                nickname: '平静的湖',
-                avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-                isExpert: false
-              },
-              replyTo: '心灵旅者'
-            }
-          ]
-        },
-        {
-          id: '102',
-          content: '作为一名心理咨询师，我建议你可以尝试"5-4-3-2-1"技巧来应对急性焦虑：找出你能看到的5样东西，听到的4种声音，触摸到的3样物品，闻到的2种气味，和尝到的1种味道。这个练习可以帮助你重新连接当下，打断焦虑思维。',
-          createTime: new Date(Date.now() - 3600000).toISOString(),
-          author: {
-            id: '202',
-            nickname: '专业心理师',
-            avatar: 'https://randomuser.me/api/portraits/women/56.jpg',
-            isExpert: true
-          },
-          likeCount: 42,
-          isLiked: true,
-          replyCount: 1,
-          replies: [
-            {
-              id: '303',
-              content: '这个方法太实用了！我刚刚试了一下，确实能感觉到焦虑在减轻。谢谢分享！',
-              createTime: new Date(Date.now() - 1200000).toISOString(),
-              author: {
-                id: '101',
-                nickname: '平静的湖',
-                avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-                isExpert: false
-              },
-              replyTo: '专业心理师'
-            }
-          ]
-        },
-        {
-          id: '103',
-          content: '我发现定期运动对缓解焦虑非常有效。即使是每天30分钟的快走或瑜伽，也能显著改善我的情绪状态。运动会释放内啡肽，这是天然的"快乐激素"。',
-          createTime: new Date(Date.now() - 7200000).toISOString(),
-          author: {
-            id: '203',
-            nickname: '健康生活家',
-            avatar: 'https://randomuser.me/api/portraits/men/67.jpg',
-            isExpert: false
-          },
-          likeCount: 18,
-          isLiked: false,
-          replyCount: 0,
-          replies: []
-        }
-      ]
+    onInputBlur() {
+      this.inputFocus = false;
+      console.log('输入框失去焦点');
     }
   }
 }
 </script>
 
 <style>
-</style> 
+.post-detail-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.back-icon,
+.more-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+
+.post-content-scroll {
+  flex: 1;
+  padding-bottom: 60px;
+}
+
+.post-content-wrapper {
+  padding: 15px;
+  padding-bottom: 80px;
+  /* 为底部输入框留出空间 */
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.author-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  margin-right: 10px;
+}
+
+.author-info {
+  flex: 1;
+}
+
+.author-name-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.author-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.expert-tag {
+  font-size: 10px;
+  color: #fff;
+  background-color: #ff9500;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.post-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.follow-btn {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.follow-btn.active {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.post-main {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.post-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.post-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 15px;
+  white-space: pre-wrap;
+}
+
+.post-images {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.post-image {
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.tag-item {
+  font-size: 12px;
+  color: #1890ff;
+  background-color: #e6f2ff;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.post-source {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.source-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.source-content {
+  font-size: 12px;
+  color: #666;
+}
+
+.post-stats {
+  display: flex;
+  justify-content: space-around;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 12px 0;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.stat-item text {
+  margin-left: 5px;
+}
+
+.comment-section {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.empty-comment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 0;
+}
+
+.empty-image {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.comment-list {
+  margin-bottom: 15px;
+}
+
+.comment-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  margin-right: 10px;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-user {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.comment-username {
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.reply-list {
+  margin-top: 10px;
+}
+
+.reply-item {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.reply-username {
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.reply-to {
+  font-size: 12px;
+  color: #999;
+  margin-right: 5px;
+}
+
+.reply-to-username {
+  font-size: 12px;
+  color: #999;
+  margin-right: 5px;
+}
+
+.reply-content {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.view-more-replies {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.comment-input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.comment-input {
+  flex: 1;
+  height: 36px;
+  background-color: #f5f5f5;
+  border-radius: 18px;
+  padding: 0 15px;
+  font-size: 14px;
+}
+
+.send-btn {
+  margin-left: 10px;
+  padding: 0 15px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 18px;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+
+.send-btn.disabled {
+  background-color: #cccccc;
+}
+</style>

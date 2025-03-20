@@ -1,4 +1,8 @@
 import App from './App'
+import { setupPermissionGuard } from './utils/permission'
+
+// 设置路由拦截
+setupPermissionGuard()
 
 // #ifndef VUE3
 import Vue from 'vue'
