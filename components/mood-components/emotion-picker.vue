@@ -1,15 +1,12 @@
 <template>
   <view class="grid grid-cols-3 gap-4">
-    <view 
-      v-for="emotion in emotions" 
-      :key="emotion.type"
+    <view v-for="emotion in emotions" :key="emotion.type"
       class="emotion-item p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300"
-      :class="{ 'selected': modelValue === emotion.type }"
-      @click="selectEmotion(emotion.type)"
-    >
+      :class="{ 'selected': modelValue === emotion.type }" @click="selectEmotion(emotion.type)">
       <view class="emotion-icon mb-3 relative">
         <text class="text-3xl">{{ emotion.emoji }}</text>
-        <view v-if="modelValue === emotion.type" class="check-mark absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+        <view v-if="modelValue === emotion.type"
+          class="check-mark absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
           <uni-icons type="checkmarkempty" size="12" color="#FFFFFF"></uni-icons>
         </view>
       </view>
@@ -42,7 +39,7 @@ export default {
   methods: {
     selectEmotion(type) {
       this.$emit('update:modelValue', type);
-      
+
       // 添加触觉反馈
       uni.vibrateShort();
     }
@@ -82,8 +79,15 @@ export default {
 }
 
 @keyframes popIn {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .bg-primary {

@@ -137,6 +137,13 @@
 		  "navigationBarTitleText": "用户资料",
 		  "enablePullDownRefresh": true
 		}
+	  },
+	  {
+		"path": "pages/meditation/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "enablePullDownRefresh": false
+		}
 	  }
 	],
 	"globalStyle": {

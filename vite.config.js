@@ -18,5 +18,5 @@ export default defineConfig({
     postcss: {
       plugins: postcssPlugins,
     },
-  },
+  }
 });

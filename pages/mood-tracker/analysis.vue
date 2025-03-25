@@ -11,143 +11,124 @@
         <text class="text-xl font-bold text-gray-800">情绪分析</text>
       </view>
     </view>
-    
+
     <!-- 内容区域 -->
     <scroll-view scroll-y class="flex-1 px-4 py-5">
       <!-- 日期筛选 -->
       <view class="bg-white rounded-xl p-4 shadow-sm mb-6">
         <view class="flex items-center justify-between mb-3">
           <text class="font-medium text-gray-800">时间范围</text>
-          <picker 
-            mode="selector" 
-            :range="dateRanges" 
-            :value="dateRangeIndex"
-            @change="onDateRangeChange"
-          >
+          <picker mode="selector" :range="dateRanges" :value="dateRangeIndex" @change="onDateRangeChange">
             <view class="flex items-center">
               <text class="text-blue-600">{{ dateRanges[dateRangeIndex] }}</text>
               <text class="iconfont icon-chevron-down text-blue-600 ml-1"></text>
             </view>
           </picker>
         </view>
-        
+
         <view v-if="dateRangeIndex === 4" class="flex items-center justify-between">
-          <picker 
-            mode="date" 
-            :value="customStartDate"
-            @change="onStartDateChange"
-          >
+          <picker mode="date" :value="customStartDate" @change="onStartDateChange">
             <view class="px-3 py-1 bg-gray-100 rounded-lg text-sm text-gray-600">
               {{ customStartDate }}
             </view>
           </picker>
           <text class="text-gray-400">至</text>
-          <picker 
-            mode="date" 
-            :value="customEndDate"
-            @change="onEndDateChange"
-          >
+          <picker mode="date" :value="customEndDate" @change="onEndDateChange">
             <view class="px-3 py-1 bg-gray-100 rounded-lg text-sm text-gray-600">
               {{ customEndDate }}
             </view>
           </picker>
         </view>
       </view>
-      
+
       <!-- 加载状态 -->
       <view v-if="loading" class="flex justify-center py-10">
         <text class="text-gray-500">加载中...</text>
       </view>
-      
+
       <view v-else-if="!hasData" class="bg-white rounded-xl p-6 shadow-sm flex justify-center">
         <text class="text-gray-500">暂无情绪数据</text>
       </view>
-      
+
       <view v-else>
         <!-- 情绪概览 -->
         <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
           <text class="font-bold text-gray-800 mb-4 block">情绪概览</text>
-          
+
           <view class="flex justify-between items-center mb-6">
             <view class="flex flex-col items-center">
               <text class="text-sm text-gray-500 mb-1">记录次数</text>
               <text class="text-2xl font-bold text-blue-600">{{ totalRecords }}</text>
             </view>
-            
+
             <view class="h-10 border-r border-gray-200"></view>
-            
+
             <view class="flex flex-col items-center">
               <text class="text-sm text-gray-500 mb-1">平均强度</text>
               <text class="text-2xl font-bold text-purple-600">{{ averageIntensity.toFixed(1) }}</text>
             </view>
-            
+
             <view class="h-10 border-r border-gray-200"></view>
-            
+
             <view class="flex flex-col items-center">
               <text class="text-sm text-gray-500 mb-1">主要情绪</text>
               <text class="text-2xl font-bold" :class="getDominantEmotionColor()">{{ dominantEmotion }}</text>
             </view>
           </view>
-          
+
           <!-- 情绪分布 -->
           <view class="mb-4">
             <text class="font-medium text-gray-800 mb-2 block">情绪分布</text>
-            
+
             <view v-for="(count, emotion) in emotionStats" :key="emotion" class="mb-2">
               <view class="flex justify-between items-center mb-1">
                 <view class="flex items-center">
-                  <text class="w-6 h-6 rounded-full flex items-center justify-center mr-2" :class="getEmotionBgClass(emotion)">
+                  <text class="w-6 h-6 rounded-full flex items-center justify-center mr-2"
+                    :class="getEmotionBgClass(emotion)">
                     {{ getEmotionEmoji(emotion) }}
                   </text>
                   <text class="text-sm text-gray-700">{{ emotion }}</text>
                 </view>
                 <text class="text-sm text-gray-500">{{ count }}次</text>
               </view>
-              
+
               <view class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <view 
-                  class="h-full rounded-full"
-                  :class="getEmotionBarClass(emotion)"
-                  :style="{ width: `${(count / totalRecords) * 100}%` }"
-                ></view>
+                <view class="h-full rounded-full" :class="getEmotionBarClass(emotion)"
+                  :style="{ width: `${(count / totalRecords) * 100}%` }"></view>
               </view>
             </view>
           </view>
         </view>
-        
+
         <!-- 情绪标签分析 -->
         <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
           <text class="font-bold text-gray-800 mb-4 block">常见情绪标签</text>
-          
+
           <view v-if="Object.keys(tagStats).length === 0" class="flex justify-center py-4">
             <text class="text-gray-500">暂无标签数据</text>
           </view>
-          
+
           <view v-else class="flex flex-wrap gap-2">
-            <view 
-              v-for="(count, tag) in tagStats" 
-              :key="tag"
-              class="px-3 py-1 rounded-full text-sm"
-              :class="getTagClass(tag, count)"
-            >
+            <view v-for="(count, tag) in tagStats" :key="tag" class="px-3 py-1 rounded-full text-sm"
+              :class="getTagClass(tag, count)">
               {{ tag }} ({{ count }})
             </view>
           </view>
         </view>
-        
+
         <!-- 情绪趋势 -->
         <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
           <text class="font-bold text-gray-800 mb-4 block">情绪趋势</text>
-          
+
           <view class="flex justify-center py-6">
             <text class="text-gray-500">图表功能开发中...</text>
           </view>
         </view>
-        
+
         <!-- 情绪洞察 -->
         <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
           <text class="font-bold text-gray-800 mb-4 block">情绪洞察</text>
-          
+
           <view class="bg-blue-50 p-4 rounded-lg">
             <view class="flex items-start">
               <text class="iconfont icon-lightbulb text-blue-500 mr-3 text-lg"></text>
@@ -186,17 +167,17 @@ export default {
     },
     dominantEmotion() {
       if (Object.keys(this.emotionStats).length === 0) return '无';
-      
+
       let maxCount = 0;
       let dominant = '';
-      
+
       for (const [emotion, count] of Object.entries(this.emotionStats)) {
         if (count > maxCount) {
           maxCount = count;
           dominant = emotion;
         }
       }
-      
+
       return dominant;
     }
   },
@@ -207,11 +188,11 @@ export default {
     async loadAnalyticsData() {
       try {
         this.loading = true;
-        
+
         let startDate, endDate;
-        
+
         const today = new Date();
-        
+
         switch (this.dateRangeIndex) {
           case 0: // 最近7天
             startDate = new Date(today);
@@ -237,18 +218,18 @@ export default {
             endDate = new Date(this.customEndDate);
             break;
         }
-        
+
         const response = await getMoodAnalytics(
           this.formatDateForApi(startDate),
           this.formatDateForApi(endDate)
         );
-        
+
         if (response.code === 200) {
           const { averageIntensity, emotionStats } = response.data;
-          
+
           this.averageIntensity = averageIntensity || 0;
           this.emotionStats = emotionStats || {};
-          
+
           // 模拟标签统计数据（实际应从后端获取）
           this.tagStats = {
             '工作/学习': 12,
@@ -258,7 +239,7 @@ export default {
             '天气变化': 3,
             '个人成就': 4
           };
-          
+
           this.hasData = Object.keys(this.emotionStats).length > 0;
         } else {
           throw new Error(response.message || '获取数据失败');
@@ -340,7 +321,7 @@ export default {
     getTagClass(tag, count) {
       const maxCount = Math.max(...Object.values(this.tagStats));
       const intensity = Math.ceil((count / maxCount) * 3); // 1-3 intensity levels
-      
+
       // 根据标签内容选择颜色
       let colorClass;
       if (tag.includes('工作') || tag.includes('学习')) {
@@ -358,18 +339,18 @@ export default {
       } else {
         colorClass = ['bg-gray-100 text-gray-700', 'bg-gray-200 text-gray-700', 'bg-gray-300 text-gray-800'][intensity - 1];
       }
-      
+
       return colorClass;
     },
     getEmotionInsight() {
       if (!this.hasData) return '暂无足够数据生成洞察';
-      
+
       const insights = [
         `在过去的时间里，你的主要情绪是"${this.dominantEmotion}"，平均情绪强度为${this.averageIntensity.toFixed(1)}。`,
         '情绪记录有助于提高自我觉察，继续保持记录习惯。',
         '尝试关注情绪背后的触发因素，这有助于更好地理解自己。'
       ];
-      
+
       // 根据主要情绪添加特定建议
       if (this.dominantEmotion === '快乐/愉悦') {
         insights.push('你的积极情绪占比较高，这对心理健康非常有益。');
@@ -380,7 +361,7 @@ export default {
       } else if (this.dominantEmotion === '愤怒/烦躁') {
         insights.push('当感到愤怒时，尝试暂时离开引发情绪的环境，给自己冷静的空间。');
       }
-      
+
       return insights.join(' ');
     },
     formatDateForPicker(date) {

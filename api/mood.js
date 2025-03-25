@@ -6,6 +6,9 @@ export const createMoodRecord = (moodData) => {
     url: '/api/moods',
     method: 'POST',
     data: moodData,
+    header: {
+      'userId': uni.getStorageSync('userId') || '1'
+    }
   });
 };
 
@@ -23,6 +26,9 @@ export const getMoodHistory = (pageNum = 1, pageSize = 10) => {
     url: '/api/moods/history',
     method: 'GET',
     params: { pageNum, pageSize },
+    header: {
+      'userId': uni.getStorageSync('userId') || '1'
+    }
   });
 };
 
@@ -32,6 +38,9 @@ export const getMoodByDateRange = (startDate, endDate) => {
     url: '/api/moods/date-range',
     method: 'GET',
     params: { startDate, endDate },
+    header: {
+      'userId': uni.getStorageSync('userId') || '1'
+    }
   });
 };
 
@@ -54,7 +63,10 @@ export const getMoodAnalytics = (startDate, endDate) => {
   
   return request({
     url,
-    method: 'GET'
+    method: 'GET',
+    header: {
+      'userId': uni.getStorageSync('userId') || '1'
+    }
   });
 };
 
@@ -71,5 +83,17 @@ export const getAllTags = () => {
   return request({
     url: '/api/moods/tags',
     method: 'GET'
+  });
+};
+
+// 生成情绪分享卡片数据
+export const generateMoodShareCard = (startDate, endDate) => {
+  return request({
+    url: '/api/moods/share-card/generate',
+    method: 'GET',
+    params: { startDate, endDate },
+    header: {
+      'userId': uni.getStorageSync('userId') || '1'
+    }
   });
 };

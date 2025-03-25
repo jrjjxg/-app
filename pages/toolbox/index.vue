@@ -1,15 +1,15 @@
 <template>
-  <view class="flex flex-col h-full bg-gray-50">
-    <!-- 头部 -->
-    <view class="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 pt-12 pb-6">
+  <view class="page-container">
+    <!-- 头部 - 固定在顶部 -->
+    <view class="header bg-gradient-to-r from-blue-500 to-indigo-600 px-4 pt-12 pb-6">
       <view class="flex items-center mb-4">
         <text class="text-xl font-bold text-white">工具箱</text>
       </view>
       <text class="text-white/80">探索各种心理健康工具</text>
     </view>
 
-    <!-- 内容区域 -->
-    <scroll-view scroll-y class="flex-1 px-4 py-5 pb-20">
+    <!-- 内容区域 - 使用页面级滚动，不使用scroll-view -->
+    <view class="content-container px-4 py-5 pb-20">
       <!-- 搜索框 -->
       <view class="bg-white rounded-full flex items-center px-4 py-2 mb-6 shadow-sm">
         <uni-icons type="search" size="18" color="#9CA3AF"></uni-icons>
@@ -22,10 +22,11 @@
           <text class="font-bold text-gray-800">最近使用</text>
         </view>
 
-        <scroll-view scroll-x class="whitespace-nowrap -mx-4 px-4" show-scrollbar="false">
+        <!-- 水平滚动区域 - 使用view模拟横向滚动 -->
+        <view class="recent-tools-container">
           <!-- 深呼吸 -->
-          <view class="inline-block w-28 mr-3 bg-white rounded-xl overflow-hidden shadow-sm">
-            <view class="h-20 bg-gradient-to-r from-teal-400 to-emerald-400 flex items-center justify-center">
+          <view class="recent-tool-card">
+            <view class="tool-icon-container bg-gradient-to-r from-teal-400 to-emerald-400">
               <uni-icons type="refresh" size="28" color="#FFFFFF"></uni-icons>
             </view>
             <view class="p-2">
@@ -35,8 +36,8 @@
           </view>
 
           <!-- 冥想 -->
-          <view class="inline-block w-28 mr-3 bg-white rounded-xl overflow-hidden shadow-sm">
-            <view class="h-20 bg-gradient-to-r from-blue-400 to-indigo-400 flex items-center justify-center">
+          <view class="recent-tool-card">
+            <view class="tool-icon-container bg-gradient-to-r from-blue-400 to-indigo-400">
               <uni-icons type="staff" size="28" color="#FFFFFF"></uni-icons>
             </view>
             <view class="p-2">
@@ -46,8 +47,8 @@
           </view>
 
           <!-- 情绪日记 -->
-          <view class="inline-block w-28 mr-3 bg-white rounded-xl overflow-hidden shadow-sm">
-            <view class="h-20 bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center">
+          <view class="recent-tool-card">
+            <view class="tool-icon-container bg-gradient-to-r from-purple-400 to-pink-400">
               <uni-icons type="compose" size="28" color="#FFFFFF"></uni-icons>
             </view>
             <view class="p-2">
@@ -55,7 +56,7 @@
               <text class="text-xs text-gray-500 text-center block">记录</text>
             </view>
           </view>
-        </scroll-view>
+        </view>
       </view>
 
       <!-- 冥想与正念 -->
@@ -67,8 +68,8 @@
 
         <view class="grid grid-cols-2 gap-4">
           <!-- 引导冥想 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+          <view class="meditation-card" @tap="navigateToMeditation">
+            <view class="icon-circle bg-indigo-100">
               <uni-icons type="headphones" size="24" color="#6366F1"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">引导冥想</text>
@@ -76,8 +77,8 @@
           </view>
 
           <!-- 深呼吸练习 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mb-2">
+          <view class="meditation-card">
+            <view class="icon-circle bg-teal-100">
               <uni-icons type="refresh" size="24" color="#14B8A6"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">深呼吸练习</text>
@@ -85,8 +86,8 @@
           </view>
 
           <!-- 专注力训练 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-2">
+          <view class="meditation-card">
+            <view class="icon-circle bg-amber-100">
               <uni-icons type="eye" size="24" color="#F59E0B"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">专注力训练</text>
@@ -94,8 +95,8 @@
           </view>
 
           <!-- 身体扫描 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+          <view class="meditation-card">
+            <view class="icon-circle bg-blue-100">
               <uni-icons type="scan" size="24" color="#3B82F6"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">身体扫描</text>
@@ -111,41 +112,86 @@
           <text class="text-sm text-purple-500">全部</text>
         </view>
 
-        <view class="grid grid-cols-2 gap-4">
+        <!-- 水平滚动区域 - 使用view模拟横向滚动 -->
+        <view class="emotion-tools-container">
           <!-- 情绪识别 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-2">
-              <uni-icons type="heart" size="24" color="#EC4899"></uni-icons>
+          <view class="emotion-tool-card" @tap="navigateToEmotionTool">
+            <view class="emotion-card-header">
+              <view class="emotion-icon bg-pink-100">
+                <uni-icons type="heart" size="24" color="#EC4899"></uni-icons>
+              </view>
+              <view class="emotion-title-container">
+                <text class="emotion-title">情绪识别</text>
+                <text class="emotion-time">5分钟</text>
+              </view>
             </view>
-            <text class="font-medium text-gray-800 text-center">情绪识别</text>
-            <text class="text-xs text-gray-500 text-center">练习</text>
+            <text class="emotion-desc">学习识别和命名你的情绪，提高情绪觉察能力</text>
+            <view class="progress-bar">
+              <view class="progress-fill bg-pink-500" style="width: 35%;"></view>
+            </view>
+            <view class="emotion-button bg-gradient-to-r from-pink-500 to-purple-500">
+              <text class="button-text">开始练习</text>
+            </view>
           </view>
 
           <!-- 思维重塑 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-              <uni-icons type="brain" size="24" color="#F97316"></uni-icons>
+          <view class="emotion-tool-card" @tap="navigateToThinkingTool">
+            <view class="emotion-card-header">
+              <view class="emotion-icon bg-orange-100">
+                <uni-icons type="brain" size="24" color="#F97316"></uni-icons>
+              </view>
+              <view class="emotion-title-container">
+                <text class="emotion-title">思维重塑</text>
+                <text class="emotion-time">8分钟</text>
+              </view>
             </view>
-            <text class="font-medium text-gray-800 text-center">思维重塑</text>
-            <text class="text-xs text-gray-500 text-center">8分钟</text>
+            <text class="emotion-desc">挑战消极思维模式，建立更健康的思考方式</text>
+            <view class="progress-bar">
+              <view class="progress-fill bg-orange-500" style="width: 60%;"></view>
+            </view>
+            <view class="emotion-button bg-gradient-to-r from-orange-500 to-amber-500">
+              <text class="button-text">开始练习</text>
+            </view>
           </view>
 
           <!-- 压力管理 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-              <uni-icons type="gear" size="24" color="#10B981"></uni-icons>
+          <view class="emotion-tool-card" @tap="navigateToStressTool">
+            <view class="emotion-card-header">
+              <view class="emotion-icon bg-green-100">
+                <uni-icons type="gear" size="24" color="#10B981"></uni-icons>
+              </view>
+              <view class="emotion-title-container">
+                <text class="emotion-title">压力管理</text>
+                <text class="emotion-time">10分钟</text>
+              </view>
             </view>
-            <text class="font-medium text-gray-800 text-center">压力管理</text>
-            <text class="text-xs text-gray-500 text-center">技巧</text>
+            <text class="emotion-desc">学习有效的压力管理技巧，提高心理韧性</text>
+            <view class="progress-bar">
+              <view class="progress-fill bg-green-500" style="width: 25%;"></view>
+            </view>
+            <view class="emotion-button bg-gradient-to-r from-green-500 to-teal-500">
+              <text class="button-text">查看技巧</text>
+            </view>
           </view>
 
           <!-- 情绪日记 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-              <uni-icons type="compose" size="24" color="#8B5CF6"></uni-icons>
+          <view class="emotion-tool-card" @tap="navigateToMoodJournal">
+            <view class="emotion-card-header">
+              <view class="emotion-icon bg-purple-100">
+                <uni-icons type="compose" size="24" color="#8B5CF6"></uni-icons>
+              </view>
+              <view class="emotion-title-container">
+                <text class="emotion-title">情绪日记</text>
+                <text class="emotion-time">每日习惯</text>
+              </view>
             </view>
-            <text class="font-medium text-gray-800 text-center">情绪日记</text>
-            <text class="text-xs text-gray-500 text-center">记录</text>
+            <text class="emotion-desc">记录和追踪你的情绪变化，发现情绪模式</text>
+            <view class="progress-bar">
+              <view class="progress-fill bg-purple-500" style="width: 75%;"></view>
+            </view>
+            <view class="emotion-button bg-gradient-to-r from-purple-500 to-indigo-500">
+              <text class="button-text">开始记录</text>
+            </view>
           </view>
         </view>
       </view>
@@ -159,8 +205,8 @@
 
         <view class="grid grid-cols-2 gap-4">
           <!-- 夜间安眠 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+          <view class="sleep-card">
+            <view class="icon-circle bg-indigo-100">
               <uni-icons type="moon" size="24" color="#6366F1"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">夜间安眠</text>
@@ -168,8 +214,8 @@
           </view>
 
           <!-- 睡前放松 -->
-          <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center">
-            <view class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+          <view class="sleep-card">
+            <view class="icon-circle bg-blue-100">
               <uni-icons type="wind-power" size="24" color="#3B82F6"></uni-icons>
             </view>
             <text class="font-medium text-gray-800 text-center">睡前放松</text>
@@ -177,7 +223,7 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+    </view>
   </view>
 </template>
 
@@ -185,13 +231,209 @@
 export default {
   data() {
     return {
-
+      activeCard: null
     }
   },
   methods: {
-
+    navigateToMoodJournal() {
+      uni.navigateTo({
+        url: '/pages/mood-journal/index'
+      })
+    },
+    navigateToMeditation() {
+      uni.navigateTo({
+        url: '/pages/meditation/index'
+      })
+    },
+    navigateToEmotionTool() {
+      uni.showToast({
+        title: '即将推出',
+        icon: 'none'
+      })
+    },
+    navigateToThinkingTool() {
+      uni.showToast({
+        title: '即将推出',
+        icon: 'none'
+      })
+    },
+    navigateToStressTool() {
+      uni.showToast({
+        title: '即将推出',
+        icon: 'none'
+      })
+    }
   }
 }
 </script>
 
-<style></style>
+<style>
+.page-container {
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.content-container {
+  background-color: #f9fafb;
+}
+
+/* 最近使用工具卡片 */
+.recent-tools-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 8px 0;
+  margin: 0 -16px;
+  padding-left: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.recent-tool-card {
+  flex: 0 0 auto;
+  width: 112px;
+  margin-right: 12px;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tool-icon-container {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 冥想卡片 */
+.meditation-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+/* 情绪调节工具卡片 */
+.emotion-tools-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 8px 0;
+  margin: 0 -16px;
+  padding-left: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.emotion-tool-card {
+  flex: 0 0 auto;
+  width: 256px;
+  margin-right: 16px;
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.emotion-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.emotion-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emotion-title-container {
+  margin-left: 12px;
+}
+
+.emotion-title {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.emotion-time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.emotion-desc {
+  font-size: 14px;
+  color: #4b5563;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.emotion-button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 睡眠卡片 */
+.sleep-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 隐藏滚动条但保持功能 */
+.recent-tools-container::-webkit-scrollbar,
+.emotion-tools-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 优化滚动性能 */
+.recent-tools-container,
+.emotion-tools-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

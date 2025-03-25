@@ -3,33 +3,31 @@
     <!-- 强度可视化 -->
     <view class="relative mb-6">
       <view class="h-3 bg-gray-200 rounded-full overflow-hidden">
-        <view class="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r" 
-              :class="getIntensityGradient()"
-              :style="{ width: `${(intensity / 5) * 100}%` }">
+        <view class="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r" :class="getIntensityGradient()"
+          :style="{ width: `${(intensity / 5) * 100}%` }">
         </view>
       </view>
     </view>
-    
+
     <!-- 强度选择按钮 -->
     <view class="flex justify-between mb-2">
-      <view v-for="i in 5" :key="i" 
-            @click="setIntensity(i)"
-            class="intensity-point flex flex-col items-center transition-all duration-300"
-            :class="{'selected': intensity >= i}">
-        <view class="w-10 h-10 rounded-full flex items-center justify-center mb-1" 
-              :class="intensity >= i ? getIntensityButtonClass(i) : 'bg-gray-100'">
+      <view v-for="i in 5" :key="i" @click="setIntensity(i)"
+        class="intensity-point flex flex-col items-center transition-all duration-300"
+        :class="{ 'selected': intensity >= i }">
+        <view class="w-10 h-10 rounded-full flex items-center justify-center mb-1"
+          :class="intensity >= i ? getIntensityButtonClass(i) : 'bg-gray-100'">
           <text :class="intensity >= i ? 'text-white font-medium' : 'text-gray-500'">{{ i }}</text>
         </view>
       </view>
     </view>
-    
+
     <!-- 强度标签 -->
     <view class="flex justify-between px-2">
       <text class="text-xs text-gray-500">轻微</text>
       <text class="text-xs text-gray-500">适中</text>
       <text class="text-xs text-gray-500">强烈</text>
     </view>
-    
+
     <!-- 情绪描述 -->
     <view class="mt-6 p-4 bg-gray-50 rounded-xl">
       <text class="text-sm text-gray-700">{{ getIntensityDescription() }}</text>
@@ -63,7 +61,7 @@ export default {
     setIntensity(value) {
       this.intensity = value;
       this.$emit('input', value);
-      
+
       // 添加触觉反馈
       uni.vibrateShort();
     },
@@ -89,11 +87,11 @@ export default {
         '疲惫/无力': 'bg-gray',
         '中性/平淡': 'bg-gray'
       };
-      
+
       const baseColor = baseColors[this.emotionType] || 'bg-purple';
       // 强度等级对应的颜色深度
       const intensity = 400 + (level - 1) * 50;
-      
+
       return `${baseColor}-${intensity}`;
     },
     getIntensityDescription() {
@@ -149,7 +147,7 @@ export default {
           '情绪明显存在，但很难定义为积极或消极'
         ]
       };
-      
+
       const emotionDescriptions = descriptions[this.emotionType] || descriptions['中性/平淡'];
       return emotionDescriptions[this.intensity - 1] || '请选择情绪强度';
     }
@@ -171,39 +169,123 @@ export default {
 }
 
 /* 情绪颜色系统 */
-.bg-yellow-400 { background-color: #facc15; }
-.bg-yellow-450 { background-color: #eab308; }
-.bg-yellow-500 { background-color: #f59e0b; }
-.bg-yellow-550 { background-color: #d97706; }
-.bg-yellow-600 { background-color: #b45309; }
+.bg-yellow-400 {
+  background-color: #facc15;
+}
 
-.bg-green-400 { background-color: #34d399; }
-.bg-green-450 { background-color: #10b981; }
-.bg-green-500 { background-color: #059669; }
-.bg-green-550 { background-color: #047857; }
-.bg-green-600 { background-color: #065f46; }
+.bg-yellow-450 {
+  background-color: #eab308;
+}
 
-.bg-purple-400 { background-color: #a78bfa; }
-.bg-purple-450 { background-color: #8b5cf6; }
-.bg-purple-500 { background-color: #7c3aed; }
-.bg-purple-550 { background-color: #6d28d9; }
-.bg-purple-600 { background-color: #5b21b6; }
+.bg-yellow-500 {
+  background-color: #f59e0b;
+}
 
-.bg-blue-400 { background-color: #60a5fa; }
-.bg-blue-450 { background-color: #3b82f6; }
-.bg-blue-500 { background-color: #2563eb; }
-.bg-blue-550 { background-color: #1d4ed8; }
-.bg-blue-600 { background-color: #1e40af; }
+.bg-yellow-550 {
+  background-color: #d97706;
+}
 
-.bg-red-400 { background-color: #f87171; }
-.bg-red-450 { background-color: #ef4444; }
-.bg-red-500 { background-color: #dc2626; }
-.bg-red-550 { background-color: #b91c1c; }
-.bg-red-600 { background-color: #991b1b; }
+.bg-yellow-600 {
+  background-color: #b45309;
+}
 
-.bg-gray-400 { background-color: #9ca3af; }
-.bg-gray-450 { background-color: #6b7280; }
-.bg-gray-500 { background-color: #4b5563; }
-.bg-gray-550 { background-color: #374151; }
-.bg-gray-600 { background-color: #1f2937; }
+.bg-green-400 {
+  background-color: #34d399;
+}
+
+.bg-green-450 {
+  background-color: #10b981;
+}
+
+.bg-green-500 {
+  background-color: #059669;
+}
+
+.bg-green-550 {
+  background-color: #047857;
+}
+
+.bg-green-600 {
+  background-color: #065f46;
+}
+
+.bg-purple-400 {
+  background-color: #a78bfa;
+}
+
+.bg-purple-450 {
+  background-color: #8b5cf6;
+}
+
+.bg-purple-500 {
+  background-color: #7c3aed;
+}
+
+.bg-purple-550 {
+  background-color: #6d28d9;
+}
+
+.bg-purple-600 {
+  background-color: #5b21b6;
+}
+
+.bg-blue-400 {
+  background-color: #60a5fa;
+}
+
+.bg-blue-450 {
+  background-color: #3b82f6;
+}
+
+.bg-blue-500 {
+  background-color: #2563eb;
+}
+
+.bg-blue-550 {
+  background-color: #1d4ed8;
+}
+
+.bg-blue-600 {
+  background-color: #1e40af;
+}
+
+.bg-red-400 {
+  background-color: #f87171;
+}
+
+.bg-red-450 {
+  background-color: #ef4444;
+}
+
+.bg-red-500 {
+  background-color: #dc2626;
+}
+
+.bg-red-550 {
+  background-color: #b91c1c;
+}
+
+.bg-red-600 {
+  background-color: #991b1b;
+}
+
+.bg-gray-400 {
+  background-color: #9ca3af;
+}
+
+.bg-gray-450 {
+  background-color: #6b7280;
+}
+
+.bg-gray-500 {
+  background-color: #4b5563;
+}
+
+.bg-gray-550 {
+  background-color: #374151;
+}
+
+.bg-gray-600 {
+  background-color: #1f2937;
+}
 </style>

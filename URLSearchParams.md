@@ -1,3 +1,10 @@
+
+
+# 修复 request.js 中的 URLSearchParams 问题
+
+找到问题根源了！问题出在 `request.js` 文件中使用了 `URLSearchParams`。让我们修复这个问题：
+
+```javascript:MyAi/api/request.js
 // 封装请求方法
 const BASE_URL = 'http://192.168.2.103:9000'; // 替换为你的后端API地址
 //移动端开发时，前端api和后端yml文件都要修改address
@@ -88,4 +95,27 @@ export const request = (options) => {
     });
   });
 };
+```
 
+## 解决方案说明
+
+1. **问题根源**：
+   - 在 `request.js` 中使用了 `URLSearchParams` 来构建查询字符串
+   - 这是所有 API 调用的基础，所以会影响所有使用参数的请求
+
+2. **解决方法**：
+   - 添加了 `buildQueryString` 辅助函数，完全替代 `URLSearchParams`
+   - 这个函数使用基本的 JavaScript 方法构建查询字符串
+   - 保留了原有的过滤逻辑，只处理非空值
+
+3. **优势**：
+   - 兼容所有平台，包括 App 和小程序
+   - 功能与原来的 `URLSearchParams` 完全相同
+   - 性能可能更好，因为避免了创建额外的对象
+
+4. **注意事项**：
+   - 这个修改不会影响任何现有的 API 调用
+   - 所有使用 `params` 的请求都会自动使用新的方法
+   - 不需要修改其他文件
+
+这个修改应该能解决所有与 `URLSearchParams` 相关的问题。请更新 `request.js` 文件并测试您的应用，看看问题是否已经解决。
