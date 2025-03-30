@@ -51,7 +51,8 @@
 		"style": {
 		  "navigationStyle": "custom",
 		  "navigationBarTitleText": "社区",
-		  "backgroundColor": "#f5f5f5"
+		  "backgroundColor": "#f5f5f5",
+		  "enablePullDownRefresh": true
 		}
 	  },
 	  {
@@ -134,7 +135,7 @@
 	  {
 		"path": "pages/community/user-profile",
 		"style": {
-		  "navigationBarTitleText": "用户资料",
+			"navigationStyle": "custom",
 		  "enablePullDownRefresh": true
 		}
 	  },
@@ -143,6 +144,34 @@
 		"style": {
 		  "navigationStyle": "custom",
 		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/driftbottle/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "漂流瓶"
+		}
+	  },
+	  {
+		"path": "pages/driftbottle/detail",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "漂流瓶详情"
+		}
+	  },
+	  {
+		"path": "pages/driftbottle/my-bottles",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "我的漂流瓶"
+		}
+	  },
+	  {
+		"path": "pages/driftbottle/throw",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "写漂流瓶"
 		}
 	  }
 	],
@@ -209,5 +238,20 @@
 		  "path": "pages/auth/login"
 		}
 	  ]
-	}
+	},
+	"subPackages": [
+	  {
+		"root": "pages/admin",
+		"pages": [
+		  // 删除bottle-audit相关配置
+		  // {
+		  //   "path": "bottle-audit", 
+		  //   "style": {
+		  //     "navigationStyle": "custom",
+		  //     "enablePullDownRefresh": false
+		  //   }
+		  // }
+		]
+	  }
+	]
   }

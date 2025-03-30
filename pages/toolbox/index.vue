@@ -196,6 +196,34 @@
         </view>
       </view>
 
+      <!-- 社交支持 - 在情绪调节区块后添加 -->
+      <view class="mb-6">
+        <view class="flex justify-between items-center mb-3">
+          <text class="font-bold text-gray-800">社交支持</text>
+          <text class="text-sm text-purple-500">全部</text>
+        </view>
+
+        <view class="grid grid-cols-2 gap-4">
+          <!-- 漂流瓶 -->
+          <view class="meditation-card" @tap="navigateToDriftBottle">
+            <view class="icon-circle bg-blue-100">
+              <uni-icons type="paperplane" size="24" color="#3B82F6"></uni-icons>
+            </view>
+            <text class="font-medium text-gray-800 text-center">漂流瓶</text>
+            <text class="text-xs text-gray-500 text-center">匿名社交</text>
+          </view>
+
+          <!-- 支持圈 (预留位置，可以后续添加其他社交支持工具) -->
+          <view class="meditation-card">
+            <view class="icon-circle bg-purple-100">
+              <uni-icons type="chat" size="24" color="#8B5CF6"></uni-icons>
+            </view>
+            <text class="font-medium text-gray-800 text-center">支持圈</text>
+            <text class="text-xs text-gray-500 text-center">团体交流</text>
+          </view>
+        </view>
+      </view>
+
       <!-- 睡眠改善 -->
       <view class="mb-6">
         <view class="flex justify-between items-center mb-3">
@@ -261,6 +289,11 @@ export default {
       uni.showToast({
         title: '即将推出',
         icon: 'none'
+      })
+    },
+    navigateToDriftBottle() {
+      uni.navigateTo({
+        url: '/pages/driftbottle/index'
       })
     }
   }

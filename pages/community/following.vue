@@ -43,8 +43,8 @@
 </template>
 
 <script>
-import { getFollowingList } from '@/api/follow';
-import { toggleFollow } from '@/api/follow';
+import { getFollowingList, toggleFollow } from '@/api/follow';
+
 
 export default {
     data() {

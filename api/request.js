@@ -1,5 +1,5 @@
 // 封装请求方法
-const BASE_URL = 'http://192.168.2.103:9000'; // 替换为你的后端API地址
+const BASE_URL = 'http://localhost:9000'; // 替换为你的后端API地址
 //移动端开发时，前端api和后端yml文件都要修改address
 
 /**

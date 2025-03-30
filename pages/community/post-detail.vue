@@ -4,23 +4,23 @@
     <view class="header">
       <view class="back-icon" @click="goBack">
         <uni-icons type="back" size="20"></uni-icons>
-      </view>
+        </view>
       <view class="title">帖子详情</view>
       <view class="more-icon" @click="showActionSheet">
         <uni-icons type="more-filled" size="20"></uni-icons>
       </view>
     </view>
-
+    
     <!-- 加载中 -->
     <view v-if="loading" class="loading-container">
       <uni-load-more status="loading"></uni-load-more>
-    </view>
-
+      </view>
+      
     <!-- 帖子内容 -->
     <scroll-view v-else scroll-y class="post-content-scroll" refresher-enabled :refresher-triggered="refreshing"
       @refresherrefresh="onRefresh" @scrolltolower="loadMoreComments">
       <view class="post-content-wrapper">
-        <!-- 用户信息 -->
+          <!-- 用户信息 -->
         <view class="post-author">
           <image :src="post.author.avatar || '/static/images/default-avatar.png'" class="author-avatar"
             @click="goToUserProfile(post.author.id)"></image>
@@ -34,33 +34,33 @@
           <view v-if="post.author.id !== currentUserId" class="follow-btn" :class="{ active: post.author.isFollowed }"
             @click="toggleFollow">
             {{ post.author.isFollowed ? '已关注' : '关注' }}
+            </view>
           </view>
-        </view>
-
+          
         <!-- 帖子标题和内容 -->
         <view class="post-main">
           <view v-if="post.title" class="post-title">{{ post.title }}</view>
           <view class="post-text">{{ post.content }}</view>
-
-          <!-- 帖子图片 -->
+            
+            <!-- 帖子图片 -->
           <view v-if="post.images && post.images.length > 0" class="post-images">
             <image v-for="(img, index) in post.images" :key="index" :src="img" mode="widthFix" class="post-image"
               @click="previewImage(index)"></image>
-          </view>
-
-          <!-- 帖子标签 -->
+            </view>
+            
+            <!-- 帖子标签 -->
           <view v-if="post.tags && post.tags.length > 0" class="post-tags">
             <view v-for="tag in post.tags" :key="tag" class="tag-item">
-              {{ tag }}
+                {{ tag }}
+              </view>
             </view>
-          </view>
-
+            
           <!-- 帖子来源 -->
           <view v-if="post.source" class="post-source">
             <view class="source-title">{{ post.source.title }}</view>
             <view class="source-content">{{ post.source.content }}</view>
-          </view>
-        </view>
+                </view>
+              </view>
 
         <!-- 帖子互动数据 -->
         <view class="post-stats">
@@ -71,21 +71,21 @@
           <view class="stat-item" @click="toggleLike">
             <uni-icons :type="post.isLiked ? 'heart-filled' : 'heart'" size="20" color="#ff6b6b"></uni-icons>
             <text>{{ post.likeCount || 0 }}</text>
-          </view>
+              </view>
           <view class="stat-item" @click="focusCommentInput">
             <uni-icons type="chat" size="20"></uni-icons>
             <text>{{ post.commentCount || 0 }}</text>
-          </view>
+            </view>
           <view class="stat-item" @click="sharePost">
             <uni-icons type="redo" size="20"></uni-icons>
             <text>分享</text>
           </view>
         </view>
-
+        
         <!-- 评论区 -->
         <view class="comment-section">
           <view class="section-title">评论 ({{ post.commentCount || 0 }})</view>
-
+          
           <!-- 评论列表 -->
           <view v-if="comments.length === 0" class="empty-comment">
             <image src="/static/images/empty-comment.png" mode="aspectFit" class="empty-image"></image>
@@ -105,12 +105,12 @@
                     {{ comment.username || '用户' }}
                   </text>
                   <text class="comment-time">{{ formatTime(comment.createTime) }}</text>
-                </view>
+                  </view>
 
                 <!-- 评论内容 -->
                 <view class="comment-text">{{ comment.content }}</view>
-
-                <!-- 评论操作 -->
+                  
+                  <!-- 评论操作 -->
                 <view class="comment-actions">
                   <!-- 其他操作按钮 -->
                   <view class="action-item" @click="replyComment(comment)">
@@ -122,20 +122,20 @@
                     <uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" size="16"
                       :color="comment.isLiked ? '#ff6b6b' : '#999'"></uni-icons>
                     <text>{{ comment.likeCount || 0 }}</text>
-                  </view>
-                </view>
-
+                      </view>
+                    </view>
+                    
                 <!-- 回复列表 -->
                 <view v-if="comment.children && comment.children.length > 0" class="reply-list">
                   <view v-for="(reply, replyIndex) in comment.children" :key="reply.id" class="reply-item">
                     <text class="reply-username" @click="goToUserProfile(reply.userId)">{{ reply.username || '用户'
-                      }}</text>
+                    }}</text>
                     <text v-if="reply.replyToUserId && reply.replyToUserId !== comment.userId" class="reply-to">
                       回复 <text class="reply-to-username" @click="goToUserProfile(reply.replyToUserId)">{{
                         reply.replyToUsername || '用户' }}</text>
                     </text>
                     <text class="reply-content">{{ reply.content }}</text>
-                  </view>
+                    </view>
 
                   <!-- 查看更多回复 -->
                   <view v-if="comment.hasMoreReplies" class="view-more-replies" @click="loadMoreReplies(comment)">
@@ -145,13 +145,13 @@
               </view>
             </view>
           </view>
-
+          
           <!-- 加载更多评论 -->
           <uni-load-more v-if="comments.length > 0 && hasMoreComments" :status="loadMoreStatus"></uni-load-more>
         </view>
       </view>
     </scroll-view>
-
+    
     <!-- 评论输入框 -->
     <view class="comment-input-area">
       <input class="comment-input" type="text" v-model="commentContent" :placeholder="commentPlaceholder"
@@ -212,7 +212,7 @@ export default {
         console.error('获取用户信息失败', error);
       }
     },
-
+    
     // 加载帖子详情
     async loadPostDetail() {
       try {
@@ -378,7 +378,7 @@ export default {
             icon: 'success'
           });
 
-          setTimeout(() => {
+      setTimeout(() => {
             uni.navigateBack();
           }, 1500);
         }
@@ -406,7 +406,7 @@ export default {
         icon: 'none'
       });
     },
-
+    
     // 点赞/取消点赞
     async toggleLike() {
       if (!this.currentUserId) {
@@ -467,7 +467,7 @@ export default {
         });
       }
     },
-
+    
     // 评论点赞/取消点赞
     async toggleCommentLike(comment) {
       if (!this.currentUserId) {
@@ -494,7 +494,7 @@ export default {
         });
       }
     },
-
+    
     // 回复评论
     replyToComment(comment) {
       if (!this.currentUserId) {
@@ -691,27 +691,27 @@ export default {
       const now = new Date();
       const postTime = new Date(time);
       const diff = now - postTime;
-
+      
       // 小于1分钟
       if (diff < 60 * 1000) {
         return '刚刚';
       }
-
+      
       // 小于1小时
       if (diff < 60 * 60 * 1000) {
         return `${Math.floor(diff / (60 * 1000))}分钟前`;
       }
-
+      
       // 小于24小时
       if (diff < 24 * 60 * 60 * 1000) {
         return `${Math.floor(diff / (60 * 60 * 1000))}小时前`;
       }
-
+      
       // 小于30天
       if (diff < 30 * 24 * 60 * 60 * 1000) {
         return `${Math.floor(diff / (24 * 60 * 60 * 1000))}天前`;
       }
-
+      
       // 大于30天
       const year = postTime.getFullYear();
       const month = postTime.getMonth() + 1;
@@ -1081,4 +1081,4 @@ export default {
 .send-btn.disabled {
   background-color: #cccccc;
 }
-</style>
+</style> 
