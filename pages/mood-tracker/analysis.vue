@@ -5,7 +5,7 @@
       <view class="flex items-center mb-4">
         <navigator url="/pages/mood-tracker/index" open-type="navigateBack" hover-class="none">
           <view class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-            <text class="iconfont icon-arrow-left text-gray-600"></text>
+            <uni-icons type="left" size="20" color="#6B7280"></uni-icons>
           </view>
         </navigator>
         <text class="text-xl font-bold text-gray-800">情绪分析</text>
@@ -21,7 +21,7 @@
           <picker mode="selector" :range="dateRanges" :value="dateRangeIndex" @change="onDateRangeChange">
             <view class="flex items-center">
               <text class="text-blue-600">{{ dateRanges[dateRangeIndex] }}</text>
-              <text class="iconfont icon-chevron-down text-blue-600 ml-1"></text>
+              <uni-icons type="down" size="16" color="#2563EB" class="ml-1"></uni-icons>
             </view>
           </picker>
         </view>
@@ -131,7 +131,7 @@
 
           <view class="bg-blue-50 p-4 rounded-lg">
             <view class="flex items-start">
-              <text class="iconfont icon-lightbulb text-blue-500 mr-3 text-lg"></text>
+              <uni-icons type="info" size="20" color="#3B82F6" class="mr-3"></uni-icons>
               <view>
                 <text class="font-medium text-blue-700 block mb-1">情绪分析</text>
                 <text class="text-blue-600 text-sm">{{ getEmotionInsight() }}</text>

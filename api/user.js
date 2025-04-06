@@ -4,7 +4,10 @@ import { request } from './request';
 export const getUserInfo = () => {
   return request({
     url: '/api/user/me',
-    method: 'GET'
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + uni.getStorageSync('token')
+    }
   });
 };
 

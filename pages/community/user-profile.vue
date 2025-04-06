@@ -21,7 +21,6 @@
                         {{ user.nickname }}
                         <view v-if="user.isExpert" class="expert-tag">专家</view>
                     </view>
-                    <view class="user-id">ID: {{ user.id }}</view>
                 </view>
             </view>
 

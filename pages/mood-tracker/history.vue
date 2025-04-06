@@ -6,7 +6,7 @@
         <view class="flex items-center">
           <navigator url="/pages/mood-tracker/index" open-type="navigateBack" hover-class="none">
             <view class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-              <text class="iconfont icon-arrow-left text-gray-600"></text>
+              <uni-icons type="left" size="20" color="#6B7280"></uni-icons>
             </view>
           </navigator>
           <text class="text-xl font-bold text-gray-800">情绪历史</text>
@@ -14,7 +14,7 @@
 
         <!-- 分享按钮 -->
         <view class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center" @tap="showShareOptions">
-          <text class="iconfont icon-share text-blue-600"></text>
+          <uni-icons type="redo" size="20" color="#2563EB"></uni-icons>
         </view>
       </view>
     </view>
@@ -28,7 +28,7 @@
           <picker mode="selector" :range="dateRanges" :value="dateRangeIndex" @change="onDateRangeChange">
             <view class="flex items-center">
               <text class="text-blue-600">{{ dateRanges[dateRangeIndex] }}</text>
-              <text class="iconfont icon-chevron-down text-blue-600 ml-1"></text>
+              <uni-icons type="down" size="16" color="#2563EB" class="ml-1"></uni-icons>
             </view>
           </picker>
         </view>
@@ -87,7 +87,7 @@
           <view class="flex justify-between items-center mb-4">
             <text class="text-lg font-bold">分享情绪记录</text>
             <view class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center" @tap="closeShareModal">
-              <text class="iconfont icon-close text-gray-600"></text>
+              <uni-icons type="closeempty" size="20" color="#6B7280"></uni-icons>
             </view>
           </view>
 
@@ -96,7 +96,7 @@
             <picker mode="selector" :range="shareRanges" :value="shareRangeIndex" @change="onShareRangeChange">
               <view class="border border-gray-300 rounded-lg p-3 flex justify-between items-center">
                 <text>{{ shareRanges[shareRangeIndex] }}</text>
-                <text class="iconfont icon-chevron-down text-gray-500"></text>
+                <uni-icons type="down" size="16" color="#6B7280"></uni-icons>
               </view>
             </picker>
           </view>

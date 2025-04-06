@@ -127,7 +127,6 @@
 </template>
 
 <script>
-import { videoApi } from '@/api/video'
 
 export default {
     data() {

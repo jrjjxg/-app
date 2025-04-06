@@ -26,6 +26,13 @@
 		}
 	  },
 	  {
+		"path": "pages/profile/edit",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "编辑资料"
+		}
+	  },
+	  {
 		"path": "pages/index/index",
 		"style": {
 		  "navigationStyle": "custom",
@@ -173,6 +180,78 @@
 		  "navigationStyle": "custom",
 		  "navigationBarTitleText": "写漂流瓶"
 		}
+	  },
+	  {
+		"path": "pages/profile/background-setting",
+		"style": {
+		  "navigationStyle": "custom",
+		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/journal/list",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
+		}
+	  },
+	  {
+		"path": "pages/journal/edit",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
+		}
+	  },
+	  {
+		"path": "pages/journal/detail",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
+		}
+	  },
+	  {
+		"path": "pages/reports/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
+		}
+	  },
+	  {
+		"path": "pages/reports/detail",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
+		}
+	  },
+	  {
+		"path": "pages/psychological-test/search-result",
+		"style": {
+		  "navigationStyle": "custom",
+		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/emotion-recognition/index",
+		"style": {
+		  "navigationStyle": "custom",
+		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/chatbot/threads",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "智能助手",
+		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/chatbot/chat",
+		"style": {
+		  "navigationStyle": "custom",
+		  "navigationBarTitleText": "聊天对话",
+		  "enablePullDownRefresh": false
+		}
 	  }
 	],
 	"globalStyle": {
@@ -195,32 +274,32 @@
 		{
 		  "pagePath": "pages/index/index",
 		  "text": "首页",
-		  "iconPath": "static/icons/home.png",
-		  "selectedIconPath": "static/icons/home-active.png"
+		  "iconPath": "static/tabbar/home.png",
+		  "selectedIconPath": "static/tabbar/home.png"
 		},
 		{
 		  "pagePath": "pages/toolbox/index",
 		  "text": "工具箱",
 		  "iconPath": "static/tabbar/tools.png",
-		  "selectedIconPath": "static/tabbar/tools-active.png"
+		  "selectedIconPath": "static/tabbar/tools.png"
 		},
 		{
 		  "pagePath": "pages/community/index",
 		  "text": "社区",
 		  "iconPath": "static/tabbar/community.png",
-		  "selectedIconPath": "static/tabbar/community-active.png"
+		  "selectedIconPath": "static/tabbar/community.png"
 		},
 		{
 			"pagePath": "pages/psychological-test/index",
 			"text": "测评",
 			"iconPath": "static/tabbar/test.png",
-			"selectedIconPath": "static/tabbar/test-active.png"
+			"selectedIconPath": "static/tabbar/test.png"
 		},
 		{
 		  "pagePath": "pages/profile/index",
 		  "text": "我的",
 		  "iconPath": "static/tabbar/profile.png",
-		  "selectedIconPath": "static/tabbar/profile-active.png"
+		  "selectedIconPath": "static/tabbar/profile.png"
 		}
 	  ]
 	},
@@ -243,14 +322,46 @@
 	  {
 		"root": "pages/admin",
 		"pages": [
-		  // 删除bottle-audit相关配置
-		  // {
-		  //   "path": "bottle-audit", 
-		  //   "style": {
-		  //     "navigationStyle": "custom",
-		  //     "enablePullDownRefresh": false
-		  //   }
-		  // }
+		]
+	  },
+	  {
+		"root": "pages/mental-status",
+		"pages": [
+		  {
+			"path": "dashboard",
+			"style": {
+			  "navigationBarTitleText": "心理健康状态",
+			  "enablePullDownRefresh": true
+			}
+		  },
+		  {
+			"path": "alert-detail",
+			"style": {
+			  "navigationBarTitleText": "预警详情"
+			}
+		  }
+		]
+	  },
+	  {
+		"root": "pages/settings",
+		"pages": [
+		  {
+			"path": "emergency-contacts",
+			"style": {
+			  "navigationBarTitleText": "紧急联系人设置"
+			}
+		  }
+		]
+	  },
+	  {
+		"root": "pages/notifications",
+		"pages": [
+		  {
+			"path": "index",
+			"style": {
+			  "navigationBarTitleText": "通知中心"
+			}
+		  }
 		]
 	  }
 	]

@@ -5,47 +5,43 @@
     <view class="px-4 pt-12 pb-3">
       <view class="flex items-center bg-gray-100 rounded-full px-4 py-2">
         <uni-icons type="search" size="18" color="#666666"></uni-icons>
-        <input class="flex-1 ml-2 text-sm" placeholder="搜搜你想做的测评" />
-        <navigator url="/pages/psychological-test/report" class="ml-3">
-          <uni-icons type="bars" size="22" color="#333333"></uni-icons>
-        </navigator>
+        <input class="flex-1 ml-2 text-sm" placeholder="搜搜你想做的测评" v-model="searchKeyword" @confirm="handleSearch" />
       </view>
     </view>
 
     <!-- 分类导航 -->
     <scroll-view scroll-x class="whitespace-nowrap px-2 mb-3 scroll-optimize" show-scrollbar="false">
-      <view class="inline-block px-4 py-2">
-        <text class="text-indigo-600 font-medium">全部</text>
-        <view class="h-0.5 bg-indigo-600 mt-1 rounded-full"></view>
+      <view class="inline-block px-4 py-2" @click="switchTab('all')">
+        <text :class="activeTab === 'all' ? 'text-indigo-600 font-medium' : 'text-gray-500'">全部</text>
+        <view v-if="activeTab === 'all'" class="h-0.5 bg-indigo-600 mt-1 rounded-full"></view>
       </view>
-      <view class="inline-block px-4 py-2">
-        <text class="text-gray-500">最热</text>
+      <view class="inline-block px-4 py-2" @click="switchTab('hot')">
+        <text :class="activeTab === 'hot' ? 'text-indigo-600 font-medium' : 'text-gray-500'">最热</text>
+        <view v-if="activeTab === 'hot'" class="h-0.5 bg-indigo-600 mt-1 rounded-full"></view>
       </view>
-      <view class="inline-block px-4 py-2">
-        <text class="text-gray-500">最新</text>
+      <view class="inline-block px-4 py-2" @click="switchTab('new')">
+        <text :class="activeTab === 'new' ? 'text-indigo-600 font-medium' : 'text-gray-500'">最新</text>
+        <view v-if="activeTab === 'new'" class="h-0.5 bg-indigo-600 mt-1 rounded-full"></view>
       </view>
     </scroll-view>
+
+    <!-- 在测试列表上方添加筛选提示 -->
+    <view v-if="activeTab !== 'all'" class="mx-3 my-2 p-2 bg-blue-50 rounded-lg">
+      <text v-if="activeTab === 'hot'" class="text-xs text-blue-600">
+        <uni-icons type="fire" size="14" color="#2563EB"></uni-icons> 显示最热门的10个测评,大家都在测哦
+      </text>
+      <text v-else-if="activeTab === 'new'" class="text-xs text-blue-600">
+        <uni-icons type="calendar" size="14" color="#2563EB"></uni-icons> 显示最近一周上线的测评，快来看看吧👀
+      </text>
+    </view>
 
     <!-- 左侧分类菜单 -->
     <view class="flex flex-1 overflow-hidden">
       <scroll-view scroll-y class="w-20 bg-gray-50 border-r border-gray-100 scroll-optimize">
-        <view class="py-3 px-2 text-center bg-white">
-          <text class="text-indigo-600 font-medium">人格</text>
-        </view>
-        <view class="py-3 px-2 text-center">
-          <text class="text-gray-500">恋爱</text>
-        </view>
-        <view class="py-3 px-2 text-center">
-          <text class="text-gray-500">自我</text>
-        </view>
-        <view class="py-3 px-2 text-center">
-          <text class="text-gray-500">情绪</text>
-        </view>
-        <view class="py-3 px-2 text-center">
-          <text class="text-gray-500">职业</text>
-        </view>
-        <view class="py-3 px-2 text-center">
-          <text class="text-gray-500">趣味</text>
+        <view v-for="category in allCategories" :key="category.code" class="py-3 px-2 text-center"
+          :class="selectedCategory === category.code ? 'bg-white' : ''" @click="switchCategory(category.code)">
+          <text :style="selectedCategory === category.code ? { color: category.color } : { color: '#6B7280' }"
+            :class="selectedCategory === category.code ? 'font-medium' : ''">{{ category.name }}</text>
         </view>
       </scroll-view>
 
@@ -60,82 +56,33 @@
         :lower-threshold="300">
         <!-- 测试列表 -->
         <view class="px-3 py-2">
-          <!-- 人格测试 -->
-          <view v-for="(test, index) in displayedPersonalityTests" :key="index"
-            class="test-card mb-4 bg-white rounded-xl shadow-md overflow-hidden" @click="goToTestDetail(test)">
-            <!-- 卡片内容 -->
-            <view class="p-4">
-              <!-- 上部分：图片和名称 -->
-              <view class="flex mb-2">
-                <view class="w-16 h-16 rounded-lg overflow-hidden shadow-sm mr-3">
-                  <image v-if="test.imageUrl" :src="test.imageUrl" mode="aspectFill" class="w-full h-full" lazy-load>
-                  </image>
-                  <view v-else class="w-full h-16 bg-indigo-500 flex items-center justify-center">
-                    <uni-icons type="person" size="28" color="#ffffff"></uni-icons>
-                  </view>
-                </view>
-
-                <view class="flex-1">
-                  <text class="text-base font-semibold text-gray-800 block mb-1">{{ test.name }}</text>
-                  <view class="flex items-center">
-                    <view class="px-2 py-0.5 bg-indigo-100 rounded-full">
-                      <text class="text-xs text-indigo-700">{{ test.category || '人格' }}</text>
-                    </view>
-                    <view class="flex items-center ml-2">
-                      <uni-icons type="star-filled" size="12" color="#FBBF24"></uni-icons>
-                      <text class="text-xs text-gray-500 ml-1">{{ (test.rating || 4.8).toFixed(1) }}</text>
-                    </view>
-                  </view>
-                </view>
-              </view>
-
-              <!-- 下部分：描述和统计 -->
-              <view>
-                <text class="text-sm text-gray-600 block line-clamp-2 mb-2">{{ test.description || '了解你的人格特质，发现真实的自我'
-                }}</text>
-
-                <view class="flex items-center justify-between">
-                  <view class="flex items-center">
-                    <view class="flex items-center">
-                      <uni-icons type="person-filled" size="12" color="#6B7280"></uni-icons>
-                      <text class="text-xs text-gray-500 ml-1">{{ formatTestCount(test.testCount) }}</text>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 情绪测试 -->
-          <view v-if="displayedEmotionTests.length > 0" class="mt-6">
-            <view class="flex items-center mb-3">
-              <view class="w-1 h-5 bg-pink-500 rounded-full mr-2"></view>
-              <text class="text-lg font-semibold text-gray-800">情绪状态评估</text>
-            </view>
-
-            <view v-for="(test, index) in displayedEmotionTests" :key="index"
-              class="test-card mb-4 bg-white rounded-xl shadow-md overflow-hidden" @click="goToTestDetail(test)">
-              <!-- 卡片内容 -->
+          <!-- 测试列表 -->
+          <template v-for="(test, index) in displayedTests" :key="index">
+            <view class="test-card mb-4 bg-white rounded-xl shadow-md overflow-hidden" @click="goToTestDetail(test)">
               <view class="p-4">
                 <!-- 上部分：图片和名称 -->
                 <view class="flex mb-2">
                   <view class="w-16 h-16 rounded-lg overflow-hidden shadow-sm mr-3">
                     <image v-if="test.imageUrl" :src="test.imageUrl" mode="aspectFill" class="w-full h-full" lazy-load>
                     </image>
-                    <view v-else class="w-full h-16 bg-pink-500 flex items-center justify-center">
-                      <uni-icons type="heart" size="28" color="#ffffff"></uni-icons>
+                    <view v-else class="w-full h-16 flex items-center justify-center"
+                      :style="{ backgroundColor: getCategoryColor(test.category) }">
+                      <uni-icons type="person" size="28" color="#ffffff"></uni-icons>
                     </view>
                   </view>
 
                   <view class="flex-1">
                     <text class="text-base font-semibold text-gray-800 block mb-1">{{ test.name }}</text>
                     <view class="flex items-center">
-                      <view class="px-2 py-0.5 bg-pink-100 rounded-full">
-                        <text class="text-xs text-pink-700">{{ test.category || '情绪' }}</text>
+                      <view class="px-2 py-0.5 rounded-full" :style="{
+                        backgroundColor: `${getCategoryColor(test.category)}20`,
+                        color: getCategoryColor(test.category),
+                        borderColor: getCategoryColor(test.category)
+                      }">
+                        <text class="text-xs">{{ getCategoryLabel(test.category) }}</text>
                       </view>
                       <view class="flex items-center ml-2">
-                        <uni-icons type="star-filled" size="12" color="#FBBF24"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ (test.rating || 4.7).toFixed(1) }}</text>
+                        <text class="text-xs text-gray-500 ml-1">{{ formatTestCount(test.testCount) }}人测过</text>
                       </view>
                     </view>
                   </view>
@@ -143,114 +90,19 @@
 
                 <!-- 下部分：描述和统计 -->
                 <view>
-                  <text class="text-sm text-gray-600 block line-clamp-2 mb-2">{{ test.description || '评估你的情绪状态，找到内心平衡'
-                  }}</text>
-
+                  <text class="text-sm text-gray-600 block line-clamp-2 mb-2">{{ test.description }}</text>
                   <view class="flex items-center justify-between">
                     <view class="flex items-center">
-                      <view class="flex items-center">
-                        <uni-icons type="person-filled" size="12" color="#6B7280"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ formatTestCount(test.testCount) }}</text>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 常用测试 -->
-          <view v-if="displayedCommonTests.length > 0" class="mt-6">
-            <view class="flex items-center mb-3">
-              <view class="w-1 h-5 bg-emerald-500 rounded-full mr-2"></view>
-              <text class="text-lg font-semibold text-gray-800">常用心理测试</text>
-            </view>
-
-            <view v-for="(test, index) in displayedCommonTests" :key="index"
-              class="test-card mb-4 bg-white rounded-xl shadow-md overflow-hidden" @click="goToTestDetail(test)">
-              <!-- 卡片内容 -->
-              <view class="p-4">
-                <!-- 上部分：图片和名称 -->
-                <view class="flex mb-2">
-                  <view class="w-16 h-16 rounded-lg overflow-hidden shadow-sm mr-3">
-                    <image v-if="test.imageUrl" :src="test.imageUrl" mode="aspectFill" class="w-full h-full" lazy-load>
-                    </image>
-                    <view v-else class="w-full h-16 bg-emerald-500 flex items-center justify-center">
-                      <uni-icons type="checkbox" size="28" color="#ffffff"></uni-icons>
-                    </view>
-                  </view>
-
-                  <view class="flex-1">
-                    <text class="text-base font-semibold text-gray-800 block mb-1">{{ test.name }}</text>
-                    <view class="flex items-center">
-                      <view class="px-2 py-0.5 bg-emerald-100 rounded-full">
-                        <text class="text-xs text-emerald-700">{{ test.category || '常用' }}</text>
-                      </view>
-                      <view class="flex items-center ml-2">
-                        <uni-icons type="star-filled" size="12" color="#FBBF24"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ (test.rating || 4.9).toFixed(1) }}</text>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-
-                <!-- 下部分：描述和统计 -->
-                <view>
-                  <text class="text-sm text-gray-600 block line-clamp-2 mb-2">{{ test.description || '专业心理测试工具，助你深入了解自我'
-                  }}</text>
-
-                  <view class="flex items-center justify-between">
-                    <view class="flex items-center">
-                      <view class="flex items-center">
-                        <uni-icons type="person-filled" size="12" color="#6B7280"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ formatTestCount(test.testCount) }}</text>
-                      </view>
                       <view class="flex items-center ml-3">
                         <uni-icons type="time" size="12" color="#6B7280"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ test.time_minutes || 10 }}分钟</text>
+                        <text class="text-xs text-gray-500 ml-1">{{ test.timeMinutes || 10 }}分钟</text>
                       </view>
                     </view>
                   </view>
                 </view>
               </view>
             </view>
-          </view>
-
-          <!-- 最近完成 -->
-          <view v-if="recentTest" class="mt-8 mb-10">
-            <view class="flex items-center mb-3">
-              <view class="w-1 h-5 bg-amber-500 rounded-full mr-2"></view>
-              <text class="text-lg font-semibold text-gray-800">最近完成的评估</text>
-            </view>
-
-            <view class="bg-white rounded-xl p-5 shadow-md border border-gray-100 relative overflow-hidden">
-              <view class="flex items-center mb-4 relative">
-                <view class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center mr-3 shadow-sm">
-                  <uni-icons type="checkmarkempty" size="24" color="#ffffff"></uni-icons>
-                </view>
-                <view class="flex-1">
-                  <text class="font-semibold text-gray-800 text-base">{{ recentTest.name }}</text>
-                  <text class="text-xs text-gray-500 block">完成于 {{ recentTest.completedTime }}</text>
-                </view>
-                <view class="px-3 py-1.5 bg-indigo-600 rounded-full shadow-sm" @click.stop="viewTestResult(recentTest)">
-                  <text class="text-white text-sm">查看报告</text>
-                </view>
-              </view>
-
-              <view class="bg-amber-50 p-4 rounded-xl relative">
-                <text class="text-sm font-medium text-amber-800 mb-2 block">测试结果摘要：</text>
-                <text class="text-sm text-gray-700 leading-relaxed relative">{{ recentTest.summary }}</text>
-
-                <!-- 底部标签 -->
-                <view class="flex flex-wrap mt-3 gap-2">
-                  <view v-for="(tag, idx) in getResultTags(recentTest)" :key="idx"
-                    class="px-2 py-0.5 bg-white rounded-full border border-amber-200">
-                    <text class="text-xs text-amber-700">{{ tag }}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
+          </template>
 
           <!-- 加载更多指示器 -->
           <view v-if="isLoadingMore" class="py-4 flex justify-center">
@@ -264,7 +116,7 @@
 
 <script>
 import TestCard from '@/components/test-card.vue'
-import { fetchAllTests, getTestCompletionCounts } from '@/api/test.js'
+import { fetchAllTests, getTestCompletionCounts, searchTests, getCategories } from '@/api/test.js'
 
 export default {
   components: {
@@ -272,13 +124,17 @@ export default {
   },
   data() {
     return {
-      loading: true,
       allTests: [],
-      recentTest: null,
-      isLoadingMore: false,
+      allCategories: [],
+      selectedCategory: 'all',
+      activeTab: 'all',
+      loading: true,
+      searchKeyword: '',
       page: 1,
-      pageSize: 5,
-      hasMore: true
+      pageSize: 10,
+      hasMore: true,
+      isLoadingMore: false,
+      recentTest: null
     }
   },
   computed: {
@@ -291,7 +147,23 @@ export default {
     personalityTests() {
       return this.allTests.filter(test => test.category === 'personality')
     },
-    // 分页显示的测试列表
+    // 根据选中的分类和标签筛选测试
+    filteredTests() {
+      if (this.activeTab !== 'all') {
+        // 如果是最热或最新排序，使用searchTests接口获取的数据
+        return this.allTests;
+      } else if (this.selectedCategory === 'all') {
+        // 显示所有测试
+        return this.allTests;
+      } else {
+        // 按分类筛选
+        return this.allTests.filter(test => test.category === this.selectedCategory);
+      }
+    },
+    // 分页显示
+    displayedTests() {
+      return this.filteredTests.slice(0, this.page * this.pageSize);
+    },
     displayedPersonalityTests() {
       return this.personalityTests.slice(0, this.page * this.pageSize)
     },
@@ -303,42 +175,92 @@ export default {
     }
   },
   onLoad() {
-    this.loadTests()
-    // this.loadRecentTest()
+    this.loadCategories();
+    this.loadTests();
   },
   methods: {
+    // 加载分类数据
+    async loadCategories() {
+      try {
+        const response = await getCategories();
+        if (response.code === 200) {
+          this.allCategories = response.data;
+          console.log('加载到的分类数据:', this.allCategories);
+
+          // 如果没有选择分类，则设置默认选中第一个
+          if (!this.selectedCategory && this.allCategories.length > 0) {
+            this.selectedCategory = this.allCategories[0].code;
+          }
+        }
+      } catch (error) {
+        console.error('获取分类数据失败:', error);
+      }
+    },
+
+    // 切换分类
+    switchCategory(categoryCode) {
+      this.selectedCategory = categoryCode;
+      this.page = 1; // 重置分页
+    },
+
+    // 获取分类名称
+    getCategoryLabel(categoryCode) {
+      const category = this.allCategories.find(c => c.code === categoryCode);
+      return category ? category.name : categoryCode;
+    },
+
+    // 获取分类颜色
+    getCategoryColor(categoryCode) {
+      const category = this.allCategories.find(c => c.code === categoryCode);
+      if (category) {
+        console.log(`找到分类 ${categoryCode} 的颜色: ${category.color}`);
+        return category.color || '#6B7280';
+      }
+      console.log(`未找到分类 ${categoryCode}`);
+      return '#6B7280'; // 默认颜色
+    },
+
     async loadTests() {
       try {
-        this.loading = true
-        const response = await fetchAllTests()
-        this.allTests = response.data
+        this.loading = true;
 
-        // 确保有测试数据
+        // 如果选择了排序方式，则通过searchTests接口获取数据
+        if (this.activeTab !== 'all') {
+          const response = await searchTests('', this.activeTab);
+          if (response.code === 200) {
+            this.allTests = response.data;
+          }
+        } else {
+          // 正常加载所有测试
+          const response = await fetchAllTests();
+          if (response.code === 200) {
+            this.allTests = response.data;
+          }
+        }
+
+        // 加载测试完成人数
         if (this.allTests && this.allTests.length > 0) {
-          const testIds = this.allTests.map(test => test.id)
-
-          // 确保testIds不为空
+          const testIds = this.allTests.map(test => test.id);
           if (testIds.length > 0) {
-            const countsResponse = await getTestCompletionCounts(testIds)
-
+            const countsResponse = await getTestCompletionCounts(testIds);
             if (countsResponse.code === 200) {
               this.allTests = this.allTests.map(test => {
                 return {
                   ...test,
                   testCount: countsResponse.data[test.id] || 0
-                }
-              })
+                };
+              });
             }
           }
         }
       } catch (error) {
-        console.error('获取测试列表失败:', error)
+        console.error('获取测试列表失败:', error);
         uni.showToast({
           title: '获取测试列表失败',
           icon: 'none'
-        })
+        });
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -397,6 +319,30 @@ export default {
     getResultTags(test) {
       // 从测试结果中提取标签，如果没有则返回默认标签
       return test.tags || ['性格分析', '情绪稳定', '自我认知'];
+    },
+
+    handleSearch() {
+      if (!this.searchKeyword.trim()) return;
+
+      // 跳转到搜索结果页面
+      uni.navigateTo({
+        url: `/pages/psychological-test/search-result?keyword=${encodeURIComponent(this.searchKeyword)}`
+      });
+    },
+
+    switchTab(tab) {
+      if (this.activeTab === tab) return;
+
+      this.activeTab = tab;
+      this.page = 1; // 重置分页
+
+      // 重新加载数据
+      this.loadTests();
+    }
+  },
+  watch: {
+    activeTab() {
+      this.loadTests();
     }
   }
 }

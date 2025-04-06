@@ -12,11 +12,11 @@
         <!-- 用户信息 -->
         <view>
           <text class="text-xl font-bold text-white">{{ userInfo.nickname || '未设置昵称' }}</text>
-          <text class="text-white/80 text-sm">心灵花园会员</text>
         </view>
 
-        <!-- 编辑资料按钮 -->
-        <view class="ml-auto">
+        <!-- 编辑资料按钮和通知徽章 -->
+        <view class="ml-auto flex items-center">
+          <notification-badge class="mr-2"></notification-badge>
           <view class="px-3 py-1 bg-white/20 rounded-full" @tap="navigateToEdit">
             <text class="text-white text-sm">编辑资料</text>
           </view>
@@ -32,44 +32,12 @@
           <text class="font-bold text-gray-800">我的数据</text>
           <text class="text-sm text-purple-500">查看详情</text>
         </view>
-
-        <view class="grid grid-cols-3 gap-2">
-          <view class="flex flex-col items-center">
-            <text class="text-2xl font-bold text-purple-600">28</text>
-            <text class="text-xs text-gray-500">情绪记录</text>
-          </view>
-
-          <view class="flex flex-col items-center">
-            <text class="text-2xl font-bold text-blue-600">5</text>
-            <text class="text-xs text-gray-500">完成测评</text>
-          </view>
-
-          <view class="flex flex-col items-center">
-            <text class="text-2xl font-bold text-green-600">12</text>
-            <text class="text-xs text-gray-500">冥想次数</text>
-          </view>
-        </view>
       </view>
 
       <!-- 我的成长 -->
       <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
         <view class="flex justify-between items-center mb-4">
           <text class="font-bold text-gray-800">我的成长</text>
-        </view>
-
-        <view class="flex items-center justify-between mb-3">
-          <view class="flex items-center">
-            <view class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-              <uni-icons type="star" size="20" color="#8B5CF6"></uni-icons>
-            </view>
-            <view>
-              <text class="font-medium text-gray-800">连续打卡</text>
-              <text class="text-xs text-gray-500 block">已坚持5天</text>
-            </view>
-          </view>
-          <view class="px-3 py-1 bg-purple-100 rounded-full">
-            <text class="text-xs text-purple-600">继续加油</text>
-          </view>
         </view>
 
         <view class="flex items-center justify-between">
@@ -110,6 +78,22 @@
           <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
         </view>
 
+        <view class="p-4 flex items-center border-b border-gray-100" @tap="navigateToBackgroundSetting">
+          <view class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+            <uni-icons type="image" size="18" color="#F59E0B"></uni-icons>
+          </view>
+          <text class="text-gray-800">更换背景图片</text>
+          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
+        </view>
+
+        <view class="p-4 flex items-center border-b border-gray-100" @tap="navigateToEmergencyContacts">
+          <view class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-3">
+            <uni-icons type="phone" size="18" color="#EF4444"></uni-icons>
+          </view>
+          <text class="text-gray-800">紧急联系人</text>
+          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
+        </view>
+
         <view class="p-4 flex items-center border-b border-gray-100">
           <view class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
             <uni-icons type="help" size="18" color="#10B981"></uni-icons>
@@ -145,7 +129,12 @@
 </template>
 
 <script>
+import NotificationBadge from '@/components/notification-badge/notification-badge.vue';
+import { getUserInfo } from '@/api/user';
 export default {
+  components: {
+    NotificationBadge
+  },
   data() {
     return {
       userInfo: {
@@ -166,29 +155,46 @@ export default {
   methods: {
     async getUserInfo() {
       try {
-        const userInfo = uni.getStorageSync('userInfo')
-        if (userInfo) {
-          this.userInfo = JSON.parse(userInfo)
-        }
-        // 无论是否有本地缓存，都从服务器获取最新数据
-        const res = await this.$api.user.getUserInfo()
+        // 从服务器获取最新用户信息
+        const res = await getUserInfo();
+
+        // 检查返回数据格式并适当处理
         if (res.code === 200) {
-          this.userInfo = res.data
-          // 更新本地存储
-          uni.setStorageSync('userInfo', JSON.stringify(res.data))
+          if (res.data) {
+            this.userInfo = res.data;
+            // 更新本地存储
+            uni.setStorageSync('userInfo', JSON.stringify(res.data));
+          } else {
+            console.warn('用户信息数据为空');
+          }
+        } else {
+          throw new Error(res.message || '获取用户信息失败');
         }
       } catch (error) {
-        console.error('获取用户信息失败:', error)
+        console.error('获取用户信息失败:', error);
+        // 显示错误提示但不影响页面正常加载
         uni.showToast({
-          title: '获取用户信息失败',
+          title: '获取用户信息失败，请稍后重试',
           icon: 'none'
-        })
+        });
       }
     },
 
     navigateToEdit() {
       uni.navigateTo({
         url: '/pages/profile/edit'
+      })
+    },
+
+    navigateToBackgroundSetting() {
+      uni.navigateTo({
+        url: '/pages/profile/background-setting'
+      })
+    },
+
+    navigateToEmergencyContacts() {
+      uni.navigateTo({
+        url: '/pages/settings/emergency-contacts'
       })
     },
 
@@ -226,5 +232,3 @@ export default {
   }
 }
 </script>
-
-<style></style>

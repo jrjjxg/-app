@@ -47,13 +47,24 @@
           </view>
 
           <!-- 情绪日记 -->
-          <view class="recent-tool-card">
+          <view class="recent-tool-card" @tap="navigateToJournal">
             <view class="tool-icon-container bg-gradient-to-r from-purple-400 to-pink-400">
               <uni-icons type="compose" size="28" color="#FFFFFF"></uni-icons>
             </view>
             <view class="p-2">
-              <text class="font-medium text-gray-800 block text-center">情绪日记</text>
-              <text class="text-xs text-gray-500 text-center block">记录</text>
+              <text class="font-medium text-gray-800 block text-center">心灵日记</text>
+              <text class="text-xs text-gray-500 text-center block">记录与反思</text>
+            </view>
+          </view>
+
+          <!-- 使用报告 -->
+          <view class="recent-tool-card" @tap="navigateToReports">
+            <view class="tool-icon-container bg-gradient-to-r from-blue-400 to-teal-400">
+              <uni-icons type="chart" size="28" color="#FFFFFF"></uni-icons>
+            </view>
+            <view class="p-2">
+              <text class="font-medium text-gray-800 block text-center">使用报告</text>
+              <text class="text-xs text-gray-500 text-center block">个性化分析</text>
             </view>
           </view>
         </view>
@@ -175,17 +186,17 @@
           </view>
 
           <!-- 情绪日记 -->
-          <view class="emotion-tool-card" @tap="navigateToMoodJournal">
+          <view class="emotion-tool-card" @tap="navigateToJournal">
             <view class="emotion-card-header">
               <view class="emotion-icon bg-purple-100">
                 <uni-icons type="compose" size="24" color="#8B5CF6"></uni-icons>
               </view>
               <view class="emotion-title-container">
-                <text class="emotion-title">情绪日记</text>
+                <text class="emotion-title">心灵日记</text>
                 <text class="emotion-time">每日习惯</text>
               </view>
             </view>
-            <text class="emotion-desc">记录和追踪你的情绪变化，发现情绪模式</text>
+            <text class="emotion-desc">记录思考与情绪，发现内心模式，获取个性化洞察</text>
             <view class="progress-bar">
               <view class="progress-fill bg-purple-500" style="width: 75%;"></view>
             </view>
@@ -251,6 +262,39 @@
           </view>
         </view>
       </view>
+
+      <!-- 添加智能助手入口 -->
+      <view class="tool-card" @click="navigateToChatbot">
+        <view class="tool-icon bg-gradient-to-r from-indigo-500 to-purple-500">
+          <uni-icons type="chat-filled" size="24" color="#ffffff"></uni-icons>
+        </view>
+        <view class="tool-info">
+          <text class="tool-name">智能助手</text>
+          <text class="tool-desc">与AI助手进行多轮对话，获取支持与解答</text>
+        </view>
+      </view>
+
+      <!-- 添加心理健康状态入口 -->
+      <view class="tool-card" @click="navigateToMentalStatus">
+        <view class="tool-icon bg-gradient-to-r from-purple-500 to-pink-500">
+          <uni-icons type="heart-filled" size="24" color="#ffffff"></uni-icons>
+        </view>
+        <view class="tool-info">
+          <text class="tool-name">心理健康状态</text>
+          <text class="tool-desc">查看您的心理健康评估和预警记录</text>
+        </view>
+      </view>
+
+      <!-- 添加到工具列表中 -->
+      <view class="tool-card" @click="navigateToEmotionRecognition">
+        <view class="tool-icon bg-gradient-to-r from-yellow-500 to-amber-500">
+          <uni-icons type="emotion" size="24" color="#ffffff"></uni-icons>
+        </view>
+        <view class="tool-info">
+          <text class="tool-name">情绪识别</text>
+          <text class="tool-desc">通过照片分析你的情绪状态</text>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -295,6 +339,31 @@ export default {
       uni.navigateTo({
         url: '/pages/driftbottle/index'
       })
+    },
+    navigateToJournal() {
+      uni.navigateTo({
+        url: '/pages/journal/list'
+      });
+    },
+    navigateToReports() {
+      uni.navigateTo({
+        url: '/pages/reports/index'
+      });
+    },
+    navigateToMentalStatus() {
+      uni.navigateTo({
+        url: '/pages/mental-status/dashboard'
+      });
+    },
+    navigateToEmotionRecognition() {
+      uni.navigateTo({
+        url: '/pages/emotion-recognition/index'
+      });
+    },
+    navigateToChatbot() {
+      uni.navigateTo({
+        url: '/pages/chatbot/threads'
+      });
     }
   }
 }
@@ -468,5 +537,42 @@ export default {
 .emotion-tools-container {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* 工具卡片样式 */
+.tool-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tool-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.tool-info {
+  flex: 1;
+}
+
+.tool-name {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.tool-desc {
+  font-size: 14px;
+  color: #6b7280;
 }
 </style>

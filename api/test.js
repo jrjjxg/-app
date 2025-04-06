@@ -66,10 +66,33 @@ export function getAllTestTypes() {
 }
 
 // 获取测试完成人数
-export function getTestCompletionCounts(testTypeIds) {
-  const queryParams = testTypeIds.map(id => `testTypeId=${encodeURIComponent(id)}`).join('&');
+export function getTestCompletionCounts(testIds) {
   return request({
-    url: `/api/tests/completion-counts?${queryParams}`,
+    url: '/api/tests/completion-counts',
+    method: 'GET',
+    params: {
+      testTypeId: testIds
+    }
+  });
+}
+
+// 搜索测试
+export function searchTests(keyword, sortBy) {
+  const params = {};
+  if (keyword) params.keyword = keyword;
+  if (sortBy) params.sortBy = sortBy;
+  
+  return request({
+    url: '/api/tests/search',
+    method: 'GET',
+    params
+  });
+}
+
+// 获取所有测试分类
+export function getCategories() {
+  return request({
+    url: '/api/tests/categories/list',
     method: 'GET'
   });
 }

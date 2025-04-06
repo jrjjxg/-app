@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/user';
+import { getUserInfo, updateUserInfo, updateAvatar } from '@/api/user';
 
 export default {
     data() {
@@ -112,10 +112,17 @@ export default {
                 const res = await getUserInfo();
                 if (res.code === 0 || res.code === 200) {
                     this.userInfo = res.data;
+
                     // 设置性别选择器的索引
-                    if (this.userInfo.gender) {
-                        this.genderIndex = this.genderOptions.findIndex(g => g === this.userInfo.gender);
-                        if (this.genderIndex === -1) this.genderIndex = 0;
+                    if (this.userInfo.gender !== null && this.userInfo.gender !== undefined) {
+                        // 将数字性别转换为索引
+                        const genderMap = {
+                            1: 0, // 男
+                            2: 1, // 女
+                            0: 2  // 保密
+                        };
+                        this.genderIndex = genderMap[this.userInfo.gender] !== undefined ?
+                            genderMap[this.userInfo.gender] : 2;
                     }
                 } else {
                     uni.showToast({
@@ -144,18 +151,47 @@ export default {
                             title: '上传中...'
                         });
 
-                        const uploadRes = await uploadAvatar(res.tempFilePaths[0]);
-                        if (uploadRes.code === 0 || uploadRes.code === 200) {
-                            this.userInfo.avatar = uploadRes.data.url;
+                        // 七牛云上传接口
+                        const uploadRes = await new Promise((resolve, reject) => {
+                            uni.uploadFile({
+                                url: 'http://localhost:9000/api/upload/avatar',
+                                filePath: res.tempFilePaths[0],
+                                name: 'file',
+                                success: (uploadRes) => {
+                                    const result = JSON.parse(uploadRes.data);
+                                    if (uploadRes.statusCode === 200 && result.code === 200) {
+                                        resolve(result.data);
+                                    } else {
+                                        reject(new Error(result.message || '上传失败'));
+                                    }
+                                },
+                                fail: (err) => {
+                                    reject(err);
+                                }
+                            });
+                        });
+
+                        console.log('七牛云上传返回结果:', uploadRes);
+
+                        // 提取URL并更新用户头像
+                        let avatarUrl = typeof uploadRes === 'object' ?
+                            (uploadRes.url || uploadRes.fileUrl || uploadRes) :
+                            uploadRes;
+
+                        // 调用用户头像更新接口 - 直接传递字符串
+                        const updateRes = await updateAvatar(avatarUrl);
+
+                        if (updateRes.code === 200) {
+                            this.userInfo.avatar = avatarUrl;
                             uni.showToast({
                                 title: '头像上传成功',
                                 icon: 'success'
                             });
                         }
                     } catch (error) {
-                        console.error('上传头像错误:', error);
+                        console.error('头像上传失败', error);
                         uni.showToast({
-                            title: '上传头像失败，请稍后再试',
+                            title: '上传失败，请重试',
                             icon: 'none'
                         });
                     } finally {
@@ -166,7 +202,13 @@ export default {
         },
         onGenderChange(e) {
             this.genderIndex = e.detail.value;
-            this.userInfo.gender = this.genderOptions[this.genderIndex];
+            // 将中文性别转换为数字代码
+            const genderMap = {
+                '男': 1,
+                '女': 2,
+                '保密': 0
+            };
+            this.userInfo.gender = genderMap[this.genderOptions[this.genderIndex]];
         },
         onBirthdayChange(e) {
             this.userInfo.birthday = e.detail.value;
@@ -194,7 +236,20 @@ export default {
                     title: '保存中...'
                 });
 
-                const res = await updateUserInfo(this.userInfo);
+                // 创建一个副本进行处理
+                const userInfoToSave = { ...this.userInfo };
+
+                // 确保性别是数值类型
+                if (typeof userInfoToSave.gender === 'string') {
+                    const genderMap = {
+                        '男': 1,
+                        '女': 2,
+                        '保密': 0
+                    };
+                    userInfoToSave.gender = genderMap[userInfoToSave.gender] || 0;
+                }
+
+                const res = await updateUserInfo(userInfoToSave);
                 if (res.code === 0 || res.code === 200) {
                     uni.showToast({
                         title: '保存成功',

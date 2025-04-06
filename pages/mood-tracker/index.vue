@@ -5,7 +5,7 @@
       <view class="flex items-center mb-4">
         <navigator open-type="navigateBack" delta="1" hover-class="none">
           <view class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
-            <text class="iconfont icon-arrow-left text-white"></text>
+            <uni-icons type="left" size="20" color="#FFFFFF"></uni-icons>
           </view>
         </navigator>
         <text class="text-xl font-bold text-white">情绪追踪</text>
@@ -63,7 +63,7 @@
         <navigator url="/pages/mood-tracker/record"
           class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center transform-gpu">
           <view class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-2">
-            <text class="iconfont icon-edit text-pink-600"></text>
+            <uni-icons type="compose" size="24" color="#EC4899"></uni-icons>
           </view>
           <text class="font-medium text-gray-800">记录情绪</text>
           <text class="text-xs text-gray-500">记录当前感受</text>
@@ -72,7 +72,7 @@
         <navigator url="/pages/mood-tracker/history"
           class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center transform-gpu">
           <view class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-            <text class="iconfont icon-history text-purple-600"></text>
+            <uni-icons type="list" size="24" color="#A78BFA"></uni-icons>
           </view>
           <text class="font-medium text-gray-800">历史记录</text>
           <text class="text-xs text-gray-500">查看过去情绪</text>
@@ -81,7 +81,7 @@
         <navigator url="/pages/mood-tracker/analysis"
           class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center transform-gpu">
           <view class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-            <text class="iconfont icon-chart-pie text-blue-600"></text>
+            <uni-icons type="pie-filled" size="24" color="#60A5FA"></uni-icons>
           </view>
           <text class="font-medium text-gray-800">情绪分析</text>
           <text class="text-xs text-gray-500">了解情绪趋势</text>
@@ -89,7 +89,7 @@
 
         <view class="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center opacity-50 transform-gpu">
           <view class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-            <text class="iconfont icon-plant text-green-600"></text>
+            <uni-icons type="flag" size="24" color="#34D399"></uni-icons>
           </view>
           <text class="font-medium text-gray-800">情绪花园</text>
           <text class="text-xs text-gray-500">即将推出</text>

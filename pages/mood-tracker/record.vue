@@ -5,7 +5,7 @@
       <view class="flex items-center mb-4">
         <navigator url="/pages/mood-tracker/index" open-type="navigateBack" hover-class="none">
           <view class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-            <text class="iconfont icon-arrow-left text-gray-600"></text>
+            <uni-icons type="left" size="20" color="#6B7280"></uni-icons>
           </view>
         </navigator>
         <text class="text-xl font-bold text-gray-800">记录情绪</text>
@@ -37,8 +37,10 @@
         <view v-for="(tag, index) in commonTags" :key="index" class="tag-item"
           :class="tags.includes(tag) ? 'tag-active' : 'tag-inactive'" @click="toggleTag(tag)">{{ tag }}</view>
 
-        <view v-if="!showCustomTagInput" class="tag-item tag-custom" @click="showCustomTagInput = true">
-          <text class="iconfont icon-plus mr-1"></text>自定义
+        <view v-if="!showCustomTagInput" class="tag-item tag-custom flex items-center justify-center"
+          @click="showCustomTagInput = true">
+          <uni-icons type="plus" size="14" color="#4B5563" class="mr-1"></uni-icons>
+          <text>自定义</text>
         </view>
       </view>
 
