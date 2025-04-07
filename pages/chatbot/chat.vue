@@ -1,11 +1,20 @@
 <template>
     <view class="page-container bg-gray-50 flex flex-col h-screen">
         <!-- 头部 -->
-        <view class="header bg-gradient-to-r from-indigo-500 to-purple-600 px-4 pt-12 pb-4 flex items-center">
-            <view @tap="goBack" class="mr-2">
-                <uni-icons type="back" size="20" color="#ffffff"></uni-icons>
+        <view
+            class="header bg-gradient-to-r from-indigo-500 to-purple-600 px-4 pt-12 pb-4 flex items-center justify-between">
+            <view class="flex items-center">
+                <view @tap="goBack" class="mr-2">
+                    <uni-icons type="back" size="20" color="#ffffff"></uni-icons>
+                </view>
+                <text class="text-lg font-medium text-white truncate">{{ title }}</text>
             </view>
-            <text class="text-lg font-medium text-white truncate">{{ title }}</text>
+            <!-- 添加设置按钮 -->
+            <view class="flex">
+                <view @tap="showPromptSettings" class="p-2">
+                    <uni-icons type="settings" size="20" color="#ffffff"></uni-icons>
+                </view>
+            </view>
         </view>
 
         <!-- 消息区域 -->
@@ -55,7 +64,7 @@
         <!-- 底部输入区域 -->
         <view class="footer px-4 py-3 bg-white border-t border-gray-200">
             <view class="flex items-center">
-                <input class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-gray-800" placeholder="输入消息..."
+                <input class="flex-1 bg-gray-100 rounded-full px-3 h-10 leading-10 text-gray-800" placeholder="输入消息..."
                     confirm-type="send" v-model="inputMessage" @confirm="sendMessage" />
                 <view class="ml-2 bg-indigo-500 rounded-full w-10 h-10 flex items-center justify-center"
                     :class="{ 'opacity-50': !inputMessage.trim() }" @tap="sendMessage">
@@ -63,11 +72,45 @@
                 </view>
             </view>
         </view>
+
+        <!-- 系统提示词设置弹窗 -->
+        <uni-popup ref="promptSettingsPopup" type="center">
+            <view class="bg-white rounded-lg p-5 w-80 max-w-[90vw]">
+                <view class="flex justify-between items-center mb-4">
+                    <text class="text-lg font-bold text-gray-800">自定义AI助手</text>
+                    <view @tap="closePromptSettings" class="p-1">
+                        <uni-icons type="close" size="18" color="#666"></uni-icons>
+                    </view>
+                </view>
+
+                <view class="mb-4">
+                    <text class="block text-sm text-gray-600 mb-2">选择预设提示词：</text>
+                    <view class="flex overflow-x-auto pb-2 space-x-2">
+                        <view v-for="(preset, idx) in promptPresets" :key="idx"
+                            class="px-3 py-1 rounded-full text-xs whitespace-nowrap"
+                            :class="selectedPreset === idx ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-700'"
+                            @tap="selectPreset(idx)">
+                            {{ preset.name }}
+                        </view>
+                    </view>
+                </view>
+
+                <view class="mb-4">
+                    <text class="block text-sm text-gray-600 mb-2">系统提示词：</text>
+                    <textarea class="w-full border border-gray-200 rounded-lg p-2 text-sm h-32" v-model="systemPrompt"
+                        placeholder="定义AI助手的身份和行为..."></textarea>
+                </view>
+
+                <button class="w-full py-2 bg-indigo-500 text-white rounded-lg font-medium" @tap="saveSystemPrompt">
+                    保存设置
+                </button>
+            </view>
+        </uni-popup>
     </view>
 </template>
 
 <script>
-import { sendMessage, getChatHistory } from '@/api/chatbot.js'
+import { sendMessage, getChatHistory, sendMessageStream, updateSystemPrompt } from '@/api/chatbot.js'
 
 export default {
     data() {
@@ -79,7 +122,32 @@ export default {
             isLoading: false,
             scrollTop: 0,
             scrollToMessageId: '',
-            loadingMoreHistory: false
+            loadingMoreHistory: false,
+            // 系统提示词相关
+            systemPrompt: '你是一个有用的AI助手。',
+            selectedPreset: 0,
+            promptPresets: [
+                {
+                    name: '通用助手',
+                    prompt: '你是一个有用的AI助手。'
+                },
+                {
+                    name: '知识专家',
+                    prompt: '你是一位知识渊博的专家，擅长提供详细而准确的信息，尤其在学术和科学领域。回答问题时注重事实依据和逻辑性，尽量引用可靠来源。'
+                },
+                {
+                    name: '创意顾问',
+                    prompt: '你是一位创意顾问，擅长提供独特的想法和创新的解决方案。你的回答应该充满想象力，鼓励创新思维，并帮助用户跳出固有思维框架。'
+                },
+                {
+                    name: '职业教练',
+                    prompt: '你是一位职业发展教练，专注于帮助用户规划职业道路，提升职场技能，准备面试，以及解决工作中的各种挑战。提供实用建议和积极鼓励。'
+                },
+                {
+                    name: '心理咨询师',
+                    prompt: '你是一位富有同理心的心理健康顾问，可以提供情绪支持和一般性心理健康建议。你善于倾听，不做判断，并鼓励用户寻求专业帮助。注意：你不是专业治疗师，不提供诊断或取代专业建议。'
+                }
+            ]
         }
     },
     onLoad(options) {
@@ -119,10 +187,10 @@ export default {
             const userMessage = this.inputMessage.trim()
             this.inputMessage = ''
 
-            // 先将用户消息添加到列表中
-            const tempUserId = 'temp-' + Date.now()
+            // 添加用户消息
+            const userMsgId = 'msg-' + Date.now()
             this.messages.push({
-                id: tempUserId,
+                id: userMsgId,
                 role: 'user',
                 content: userMessage,
                 timestamp: new Date().toISOString()
@@ -132,27 +200,55 @@ export default {
                 this.scrollToBottom()
             })
 
-            // 显示加载中
+            // 创建空的助手消息用于流式更新
+            const assistantMsgId = 'msg-' + (Date.now() + 1)
+            this.messages.push({
+                id: assistantMsgId,
+                role: 'assistant',
+                content: '',  // 初始为空
+                timestamp: new Date().toISOString()
+            })
+
+            // 显示加载状态
             this.isLoading = true
 
             try {
-                // 发送消息到服务器
-                const res = await sendMessage(this.threadId, userMessage)
-                this.isLoading = false
+                // 使用流式API
+                sendMessageStream(this.threadId, userMessage, {
+                    onStart: (data) => {
+                        console.log('开始接收消息流', data)
+                    },
+                    onChunk: (data) => {
+                        // 更新助手消息内容
+                        const msgIndex = this.messages.findIndex(m => m.id === assistantMsgId)
+                        if (msgIndex !== -1) {
+                            this.messages[msgIndex].content += data.chunk
+                            this.$nextTick(() => {
+                                this.scrollToBottom()
+                            })
+                        }
+                    },
+                    onComplete: (data) => {
+                        this.isLoading = false
+                        console.log('消息流接收完成', data)
 
-                if (res.data) {
-                    // 添加助手回复
-                    this.messages.push({
-                        id: 'msg-' + Date.now(),
-                        role: 'assistant',
-                        content: res.data.message,
-                        timestamp: res.data.timestamp
-                    })
+                        // 保存完整消息到历史记录
+                        // 这里可以调用API保存消息或在客户端保存
 
-                    this.$nextTick(() => {
-                        this.scrollToBottom()
-                    })
-                }
+                        // 在流式对话完成后刷新历史记录
+                        setTimeout(() => {
+                            this.fetchChatHistory()
+                        }, 500) // 添加延迟以确保服务器已处理完保存操作
+                    },
+                    onError: (error) => {
+                        this.isLoading = false
+                        console.error('流式消息接收错误', error)
+                        uni.showToast({
+                            title: '接收消息失败',
+                            icon: 'none'
+                        })
+                    }
+                })
             } catch (error) {
                 this.isLoading = false
                 console.error('发送消息失败', error)
@@ -213,6 +309,44 @@ export default {
             // 这里可以加载更多历史消息
             // 如果需要实现无限滚动加载历史消息功能
             console.log('滚动到顶部，可以实现加载更多历史消息')
+        },
+        // 系统提示词设置相关方法
+        showPromptSettings() {
+            this.$refs.promptSettingsPopup.open()
+        },
+        closePromptSettings() {
+            this.$refs.promptSettingsPopup.close()
+        },
+        selectPreset(index) {
+            this.selectedPreset = index
+            this.systemPrompt = this.promptPresets[index].prompt
+        },
+        async saveSystemPrompt() {
+            try {
+                await updateSystemPrompt(this.threadId, this.systemPrompt)
+
+                uni.showToast({
+                    title: '提示词设置已保存',
+                    icon: 'success'
+                })
+
+                this.closePromptSettings()
+
+                // 提示用户发送新消息以应用设置
+                setTimeout(() => {
+                    uni.showToast({
+                        title: '发送新消息以应用设置',
+                        icon: 'none',
+                        duration: 2000
+                    })
+                }, 1000)
+            } catch (error) {
+                console.error('保存系统提示词失败', error)
+                uni.showToast({
+                    title: '保存失败，请重试',
+                    icon: 'none'
+                })
+            }
         }
     }
 }

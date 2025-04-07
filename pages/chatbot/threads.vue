@@ -4,7 +4,7 @@
         <view class="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 pt-12 pb-6">
             <view class="flex justify-between items-center">
                 <text class="text-xl font-bold text-white">智能助手</text>
-                <view @tap="createNewThread" class="bg-white/20 p-2 rounded-full">
+                <view @tap="showCreateThreadDialog" class="bg-white/20 p-2 rounded-full">
                     <uni-icons type="plusempty" size="20" color="#ffffff"></uni-icons>
                 </view>
             </view>
@@ -39,6 +39,46 @@
                 </view>
             </view>
         </scroll-view>
+
+        <!-- 创建新对话弹窗 -->
+        <uni-popup ref="createThreadPopup" type="center">
+            <view class="bg-white rounded-lg p-5 w-80 max-w-[90vw]">
+                <view class="flex justify-between items-center mb-4">
+                    <text class="text-lg font-bold text-gray-800">创建新对话</text>
+                    <view @tap="closeCreateThreadDialog" class="p-1">
+                        <uni-icons type="close" size="18" color="#666"></uni-icons>
+                    </view>
+                </view>
+
+                <view class="mb-4">
+                    <text class="block text-sm text-gray-600 mb-2">对话标题：</text>
+                    <input class="w-full border border-gray-200 rounded-lg p-2 text-sm" v-model="newThreadTitle"
+                        placeholder="输入对话标题" />
+                </view>
+
+                <view class="mb-4">
+                    <text class="block text-sm text-gray-600 mb-2">选择助手类型：</text>
+                    <view class="flex overflow-x-auto pb-2 space-x-2">
+                        <view v-for="(preset, idx) in promptPresets" :key="idx"
+                            class="px-3 py-1 rounded-full text-xs whitespace-nowrap"
+                            :class="selectedPreset === idx ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-700'"
+                            @tap="selectPreset(idx)">
+                            {{ preset.name }}
+                        </view>
+                    </view>
+                </view>
+
+                <view class="mb-4">
+                    <text class="block text-sm text-gray-600 mb-2">系统提示词：</text>
+                    <textarea class="w-full border border-gray-200 rounded-lg p-2 text-sm h-32" v-model="systemPrompt"
+                        placeholder="定义AI助手的身份和行为..."></textarea>
+                </view>
+
+                <button class="w-full py-2 bg-indigo-500 text-white rounded-lg font-medium" @tap="createNewThread">
+                    创建对话
+                </button>
+            </view>
+        </uni-popup>
     </view>
 </template>
 
@@ -48,7 +88,32 @@ import { getThreads, createThread, deleteThread } from '@/api/chatbot.js'
 export default {
     data() {
         return {
-            threads: []
+            threads: [],
+            newThreadTitle: '',
+            systemPrompt: '你是一个有用的AI助手。',
+            selectedPreset: 0,
+            promptPresets: [
+                {
+                    name: '通用助手',
+                    prompt: '你是一个有用的AI助手。'
+                },
+                {
+                    name: '知识专家',
+                    prompt: '你是一位知识渊博的专家，擅长提供详细而准确的信息，尤其在学术和科学领域。回答问题时注重事实依据和逻辑性，尽量引用可靠来源。'
+                },
+                {
+                    name: '创意顾问',
+                    prompt: '你是一位创意顾问，擅长提供独特的想法和创新的解决方案。你的回答应该充满想象力，鼓励创新思维，并帮助用户跳出固有思维框架。'
+                },
+                {
+                    name: '职业教练',
+                    prompt: '你是一位职业发展教练，专注于帮助用户规划职业道路，提升职场技能，准备面试，以及解决工作中的各种挑战。提供实用建议和积极鼓励。'
+                },
+                {
+                    name: '心理咨询师',
+                    prompt: '你是一位富有同理心的心理健康顾问，可以提供情绪支持和一般性心理健康建议。你善于倾听，不做判断，并鼓励用户寻求专业帮助。注意：你不是专业治疗师，不提供诊断或取代专业建议。'
+                }
+            ]
         }
     },
     onLoad() {
@@ -70,40 +135,54 @@ export default {
                 })
             }
         },
+        showCreateThreadDialog() {
+            // 重置字段
+            this.newThreadTitle = `新对话 ${new Date().toLocaleString()}`
+            this.selectedPreset = 0
+            this.systemPrompt = this.promptPresets[0].prompt
+            // 显示弹窗
+            this.$refs.createThreadPopup.open()
+        },
+        closeCreateThreadDialog() {
+            this.$refs.createThreadPopup.close()
+        },
+        selectPreset(index) {
+            this.selectedPreset = index
+            this.systemPrompt = this.promptPresets[index].prompt
+        },
         async createNewThread() {
-            uni.showModal({
-                title: '新建对话',
-                editable: true,
-                placeholderText: '请输入对话标题',
-                success: async (res) => {
-                    if (res.confirm && res.content) {
-                        try {
-                            const title = res.content.trim() || `新对话 ${new Date().toLocaleString()}`
-                            const response = await createThread(title)
-
-                            const threadId = response.data;
-
-                            console.log('Extracted threadId:', threadId, 'Type:', typeof threadId);
-
-                            if (typeof threadId !== 'string' || !threadId) {
-                                console.error("createThread API did not return a valid string ID:", threadId);
-                                uni.showToast({ title: '创建对话失败 (无效ID)', icon: 'none' });
-                                return;
-                            }
-
-                            uni.navigateTo({
-                                url: `/pages/chatbot/chat?threadId=${encodeURIComponent(threadId)}&title=${encodeURIComponent(title)}`
-                            })
-                        } catch (error) {
-                            console.error('创建会话失败', error)
-                            uni.showToast({
-                                title: '创建会话失败',
-                                icon: 'none'
-                            })
-                        }
-                    }
+            try {
+                if (!this.newThreadTitle.trim()) {
+                    this.newThreadTitle = `新对话 ${new Date().toLocaleString()}`
                 }
-            })
+
+                const title = this.newThreadTitle.trim()
+                const response = await createThread(title, this.systemPrompt)
+
+                const threadId = response.data;
+
+                console.log('Extracted threadId:', threadId, 'Type:', typeof threadId);
+
+                if (typeof threadId !== 'string' || !threadId) {
+                    console.error("createThread API did not return a valid string ID:", threadId);
+                    uni.showToast({ title: '创建对话失败 (无效ID)', icon: 'none' });
+                    return;
+                }
+
+                // 关闭弹窗
+                this.closeCreateThreadDialog()
+
+                // 导航到聊天页面
+                uni.navigateTo({
+                    url: `/pages/chatbot/chat?threadId=${encodeURIComponent(threadId)}&title=${encodeURIComponent(title)}`
+                })
+            } catch (error) {
+                console.error('创建会话失败', error)
+                uni.showToast({
+                    title: '创建会话失败',
+                    icon: 'none'
+                })
+            }
         },
         navigateToChat(threadId) {
             const thread = this.threads.find(t => t.id === threadId)

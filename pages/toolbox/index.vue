@@ -10,11 +10,7 @@
 
     <!-- 内容区域 - 使用页面级滚动，不使用scroll-view -->
     <view class="content-container px-4 py-5 pb-20">
-      <!-- 搜索框 -->
-      <view class="bg-white rounded-full flex items-center px-4 py-2 mb-6 shadow-sm">
-        <uni-icons type="search" size="18" color="#9CA3AF"></uni-icons>
-        <input type="text" placeholder="搜索工具..." class="flex-1 ml-2 text-sm" />
-      </view>
+
 
       <!-- 最近使用 -->
       <view class="mb-6">
