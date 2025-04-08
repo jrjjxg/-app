@@ -182,3 +182,11 @@ export function updateSystemPrompt(threadId, systemPrompt) {
     })
   })
 }
+
+export function confirmAction(data) {
+  return request({
+    url: '/api/confirm',
+    method: 'post',
+    data
+  })
+}

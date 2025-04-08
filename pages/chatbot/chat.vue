@@ -61,6 +61,27 @@
             </view>
         </scroll-view>
 
+        <!-- 确认对话框 -->
+        <uni-popup ref="confirmPopup" type="center">
+            <view class="bg-white rounded-lg p-5 w-80 max-w-[90vw]">
+                <view class="flex justify-between items-center mb-4">
+                    <text class="text-lg font-bold text-gray-800">确认操作</text>
+                    <view @tap="closeConfirmDialog" class="p-1">
+                        <uni-icons type="close" size="18" color="#666"></uni-icons>
+                    </view>
+                </view>
+                <text class="text-gray-700 mb-4">{{ confirmMessage }}</text>
+                <view class="flex justify-end space-x-3">
+                    <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg" @tap="handleConfirm(false)">
+                        取消
+                    </button>
+                    <button class="px-4 py-2 bg-indigo-500 text-white rounded-lg" @tap="handleConfirm(true)">
+                        确认
+                    </button>
+                </view>
+            </view>
+        </uni-popup>
+
         <!-- 底部输入区域 -->
         <view class="footer px-4 py-3 bg-white border-t border-gray-200">
             <view class="flex items-center">
@@ -147,7 +168,9 @@ export default {
                     name: '心理咨询师',
                     prompt: '你是一位富有同理心的心理健康顾问，可以提供情绪支持和一般性心理健康建议。你善于倾听，不做判断，并鼓励用户寻求专业帮助。注意：你不是专业治疗师，不提供诊断或取代专业建议。'
                 }
-            ]
+            ],
+            confirmMessage: '',
+            pendingConfirmation: null,
         }
     },
     onLoad(options) {
@@ -219,6 +242,18 @@ export default {
                         console.log('开始接收消息流', data)
                     },
                     onChunk: (data) => {
+                        // 检查是否是中断消息
+                        if (data.type === 'interrupt') {
+                            // 保存待处理确认信息
+                            this.pendingConfirmation = {
+                                threadId: this.threadId,
+                                userId: uni.getStorageSync('userUserName') || 'default_user'
+                            }
+                            // 显示确认对话框
+                            this.showConfirmDialog(data.message)
+                            return
+                        }
+
                         // 更新助手消息内容
                         const msgIndex = this.messages.findIndex(m => m.id === assistantMsgId)
                         if (msgIndex !== -1) {
@@ -233,12 +268,9 @@ export default {
                         console.log('消息流接收完成', data)
 
                         // 保存完整消息到历史记录
-                        // 这里可以调用API保存消息或在客户端保存
-
-                        // 在流式对话完成后刷新历史记录
                         setTimeout(() => {
                             this.fetchChatHistory()
-                        }, 500) // 添加延迟以确保服务器已处理完保存操作
+                        }, 500)
                     },
                     onError: (error) => {
                         this.isLoading = false
@@ -347,7 +379,48 @@ export default {
                     icon: 'none'
                 })
             }
-        }
+        },
+        // 处理确认对话框
+        showConfirmDialog(message) {
+            this.confirmMessage = message
+            this.$refs.confirmPopup.open()
+        },
+        closeConfirmDialog() {
+            this.$refs.confirmPopup.close()
+        },
+        async handleConfirm(confirmed) {
+            try {
+                if (this.pendingConfirmation) {
+                    const { threadId, userId } = this.pendingConfirmation
+                    await confirmAction({
+                        threadId,
+                        userId,
+                        response: confirmed ? 'yes' : 'no'
+                    })
+
+                    // 关闭对话框
+                    this.closeConfirmDialog()
+
+                    // 清空待处理确认
+                    this.pendingConfirmation = null
+
+                    // 继续对话
+                    this.continueConversation()
+                }
+            } catch (error) {
+                console.error('确认操作失败', error)
+                uni.showToast({
+                    title: '确认操作失败',
+                    icon: 'none'
+                })
+            }
+        },
+        // 继续对话
+        continueConversation() {
+            // 这里可以添加继续对话的逻辑
+            // 例如重新获取最新消息等
+            this.fetchChatHistory()
+        },
     }
 }
 </script>
