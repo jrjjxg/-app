@@ -59,3 +59,19 @@ export function toggleJournalFavorite(journalId) {
         method: 'put'
     });
 }
+
+/**
+ * 获取日记关键词云数据
+ * @param {Object} params - 查询参数
+ * @param {string} params.startDate - 开始日期 (YYYY-MM-DD)
+ * @param {string} params.endDate - 结束日期 (YYYY-MM-DD)
+ * @param {number} params.limit - 关键词数量限制
+ * @returns {Promise} - 返回关键词数据
+ */
+export function getKeywordCloudData(params) {
+  return request({
+    url: '/api/journal/stats/keyword-cloud',
+    method: 'get',
+    params
+  });
+}

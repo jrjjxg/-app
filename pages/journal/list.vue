@@ -37,6 +37,10 @@
                 @tap="showFilterOptions">
                 <uni-icons type="settings" size="20" color="#6B7280"></uni-icons>
             </view>
+            <view class="ml-3 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+                @tap="navigateToKeywords">
+                <uni-icons type="paperclip" size="20" color="#6B7280"></uni-icons>
+            </view>
         </view>
 
         <!-- 时间线视图 - 使用页面滚动 -->
@@ -183,7 +187,7 @@
                     <view class="p-2">
                         <view class="flex justify-between items-center">
                             <text class="text-sm font-medium text-gray-800 truncate flex-1">{{ journal.title || '无标题'
-                                }}</text>
+                            }}</text>
                             <uni-icons v-if="journal.isPrivate === 1" type="locked" size="12" color="#9CA3AF"
                                 class="ml-1"></uni-icons>
                         </view>
@@ -597,6 +601,22 @@ const applyFilters = () => {
 // 搜索日记
 const searchJournals = () => {
     loadJournals(true);
+};
+
+// 前往关键词云页面
+const navigateToKeywords = () => {
+    uni.navigateTo({
+        url: '/pages/journal/keywords'
+    });
+};
+
+// 格式化日期为标题格式 例如：5月15日 星期三
+const formatDayTitle = (dayStr) => {
+    const date = new Date(dayStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const weekDay = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+    return `${month}月${day}日 星期${weekDay}`;
 };
 
 onLoad(() => {

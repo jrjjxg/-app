@@ -19,17 +19,6 @@
           </view>
         </view>
       </view>
-
-      <!-- 标签栏 -->
-      <scroll-view scroll-x class="whitespace-nowrap bg-white py-2 mb-2 tag-scroll-view">
-        <view class="flex">
-          <view v-for="tag in tags" :key="tag.id" class="px-4 py-1 mx-1 rounded-full text-center"
-            :class="activeTag === tag.id ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'"
-            @click="changeTag(tag.id)">
-            {{ tag.name }}
-          </view>
-        </view>
-      </scroll-view>
     </view>
 
     <!-- 内容区域（添加上边距，为固定顶部腾出空间） -->

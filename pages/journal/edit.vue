@@ -122,6 +122,7 @@ import ThemePickerModal from '@/components/journal/ThemePickerModal.vue';
 import MoodPickerModal from '@/components/mood/MoodPickerModal.vue';
 import { formatDate, formatTime } from '@/utils/timeUtil';
 import { saveJournal as apiSaveJournal, getJournalDetail } from '@/api/journal';
+import { analyzeText } from '@/api/emotion';
 
 // 状态
 const isEdit = ref(false);
@@ -377,6 +378,28 @@ const handleSaveJournal = async () => {
         const res = await apiSaveJournal(data);
 
         if (res.code === 200) {
+            // 保存成功后，进行情感分析
+            if (journal.content && journal.content.length > 10) {
+                try {
+                    const emotionRes = await analyzeText(journal.content);
+                    if (emotionRes.code === 200 && emotionRes.data) {
+                        // 更新日记的情感分析结果
+                        await apiSaveJournal({
+                            ...data,
+                            id: res.data.id,
+                            emotionType: emotionRes.data.label,
+                            emotionProb: emotionRes.data.prob,
+                            emotionSubtype: emotionRes.data.subLabel,
+                            emotionSubtypeProb: emotionRes.data.subProb,
+                            emotionAnalysisTime: new Date().toISOString(),
+                            emotionAnalysisResult: JSON.stringify(emotionRes.data)
+                        });
+                    }
+                } catch (error) {
+                    console.error('情感分析失败', error);
+                }
+            }
+
             uni.hideLoading();
             uni.showToast({
                 title: '保存成功',

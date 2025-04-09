@@ -53,6 +53,41 @@
                         {{ tag }}
                     </view>
                 </view>
+
+                <!-- 情感分析结果 -->
+                <view v-if="emotionAnalysis" class="mt-3 p-3 rounded-lg bg-black/5">
+                    <view class="flex items-center justify-between mb-2">
+                        <text class="text-sm font-medium text-gray-700">情感分析</text>
+                        <text class="text-xs text-black/50">{{ formatDate(emotionAnalysis.analysisTime) }}</text>
+                    </view>
+                    <view class="flex items-center space-x-4">
+                        <view class="flex-1">
+                            <view class="flex items-center mb-1">
+                                <text class="text-sm text-black/70">主要情感：</text>
+                                <text class="text-sm font-medium" :class="getEmotionColorClass(emotionAnalysis.label)">
+                                    {{ emotionAnalysis.label }}
+                                </text>
+                                <text class="text-xs text-black/50 ml-1">
+                                    ({{ (emotionAnalysis.prob * 100).toFixed(1) }}%)
+                                </text>
+                            </view>
+                            <view v-if="emotionAnalysis.subLabel" class="flex items-center">
+                                <text class="text-sm text-black/70">次要情感：</text>
+                                <text class="text-sm font-medium"
+                                    :class="getEmotionColorClass(emotionAnalysis.subLabel)">
+                                    {{ emotionAnalysis.subLabel }}
+                                </text>
+                                <text class="text-xs text-black/50 ml-1">
+                                    ({{ (emotionAnalysis.subProb * 100).toFixed(1) }}%)
+                                </text>
+                            </view>
+                        </view>
+                        <view class="w-12 h-12 rounded-full flex items-center justify-center"
+                            :class="getEmotionBgClass(emotionAnalysis.label)">
+                            <text class="text-xl">{{ getEmotionIcon(emotionAnalysis.label) }}</text>
+                        </view>
+                    </view>
+                </view>
             </view>
 
             <!-- 分隔线 -->
@@ -120,12 +155,14 @@
 import { ref, computed, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getJournalDetail, toggleJournalFavorite } from '@/api/journal';
+import { getEmotionAnalysis } from '@/api/emotion';
 import { formatDate } from '@/utils/timeUtil';
 
 // 状态
 const journal = ref({});
 const relatedMood = ref(null);
 const showShareOptions = ref(false);
+const emotionAnalysis = ref(null);
 
 // 图片列表
 const imageList = computed(() => {
@@ -168,6 +205,9 @@ const loadJournalDetail = async (id) => {
             if (journal.value.relatedMoodId) {
                 await loadRelatedMood(journal.value.relatedMoodId);
             }
+
+            // 获取情感分析结果
+            await loadEmotionAnalysis(id);
         }
 
         uni.hideLoading();
@@ -190,6 +230,18 @@ const loadRelatedMood = async (moodId) => {
         }
     } catch (error) {
         console.error('加载心情失败', error);
+    }
+};
+
+// 加载情感分析结果
+const loadEmotionAnalysis = async (journalId) => {
+    try {
+        const res = await getEmotionAnalysis(journalId);
+        if (res.code === 200 && res.data) {
+            emotionAnalysis.value = res.data;
+        }
+    } catch (error) {
+        console.error('加载情感分析结果失败', error);
     }
 };
 
@@ -272,6 +324,36 @@ const previewImages = (index) => {
         current: imageList.value[index],
         urls: imageList.value
     });
+};
+
+// 获取情感颜色类
+const getEmotionColorClass = (emotion) => {
+    const colorMap = {
+        'positive': 'text-green-600',
+        'negative': 'text-red-600',
+        'neutral': 'text-gray-600'
+    };
+    return colorMap[emotion] || 'text-gray-600';
+};
+
+// 获取情感背景类
+const getEmotionBgClass = (emotion) => {
+    const bgMap = {
+        'positive': 'bg-green-100',
+        'negative': 'bg-red-100',
+        'neutral': 'bg-gray-100'
+    };
+    return bgMap[emotion] || 'bg-gray-100';
+};
+
+// 获取情感图标
+const getEmotionIcon = (emotion) => {
+    const iconMap = {
+        'positive': '😊',
+        'negative': '😢',
+        'neutral': '😐'
+    };
+    return iconMap[emotion] || '😐';
 };
 </script>
 

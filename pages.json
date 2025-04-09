@@ -133,13 +133,6 @@
 		}
 	  },
 	  {
-		"path": "pages/mood-journal/index",
-		"style": {
-		  "navigationStyle": "custom",
-		  "navigationBarTitleText": "心灵笔记"
-		}
-	  },
-	  {
 		"path": "pages/community/user-profile",
 		"style": {
 			"navigationStyle": "custom",
@@ -251,6 +244,13 @@
 		  "navigationStyle": "custom",
 		  "navigationBarTitleText": "聊天对话",
 		  "enablePullDownRefresh": false
+		}
+	  },
+	  {
+		"path": "pages/journal/keywords",
+		"style": {
+		  "navigationStyle": "custom",
+		  "app-plus": { "bounce": "none" }
 		}
 	  }
 	],

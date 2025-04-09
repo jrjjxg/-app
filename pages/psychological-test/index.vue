@@ -1,6 +1,6 @@
 <!-- pages/psychological-test/index.vue -->
 <template>
-  <view class="flex flex-col h-full bg-white">
+  <view class="page-container">
     <!-- 头部搜索区域 -->
     <view class="px-4 pt-12 pb-3">
       <view class="flex items-center bg-gray-100 rounded-full px-4 py-2">
@@ -35,73 +35,32 @@
       </text>
     </view>
 
-    <!-- 左侧分类菜单 -->
-    <view class="flex flex-1 overflow-hidden">
-      <scroll-view scroll-y class="w-20 bg-gray-50 border-r border-gray-100 scroll-optimize">
+    <!-- 主内容区域 -->
+    <view class="main-content">
+      <!-- 左侧固定分类菜单 -->
+      <view class="category-sidebar">
         <view v-for="category in allCategories" :key="category.code" class="py-3 px-2 text-center"
           :class="selectedCategory === category.code ? 'bg-white' : ''" @click="switchCategory(category.code)">
           <text :style="selectedCategory === category.code ? { color: category.color } : { color: '#6B7280' }"
-            :class="selectedCategory === category.code ? 'font-medium' : ''">{{ category.name }}</text>
+            :class="selectedCategory === category.code ? 'font-medium' : ''">
+            {{ category.name }}
+          </text>
         </view>
-      </scroll-view>
+      </view>
 
-      <!-- 右侧内容区域 -->
-      <scroll-view scroll-y class="flex-1 pb-20 scroll-optimize" v-if="loading">
-        <view class="flex items-center justify-center py-10">
+      <!-- 右侧滚动测试列表 -->
+      <scroll-view class="test-list-container" scroll-y="true" @scrolltolower="loadMoreTests" refresher-enabled
+        refresher-triggered="refreshTriggered" @refresherpulling="onRefresh" @refresherrefresh="onRefresh"
+        @refresherrestore="onRefreshRestore" @refresherabort="onRefreshRestore">
+        <!-- 加载状态 -->
+        <view v-if="loading" class="flex items-center justify-center py-10">
           <text class="text-gray-600">加载中...</text>
         </view>
-      </scroll-view>
 
-      <scroll-view scroll-y class="flex-1 pb-20 scroll-optimize" v-else @scrolltolower="loadMoreTests"
-        :lower-threshold="300">
         <!-- 测试列表 -->
-        <view class="px-3 py-2">
-          <!-- 测试列表 -->
+        <view v-else class="px-3 py-2">
           <template v-for="(test, index) in displayedTests" :key="index">
-            <view class="test-card mb-4 bg-white rounded-xl shadow-md overflow-hidden" @click="goToTestDetail(test)">
-              <view class="p-4">
-                <!-- 上部分：图片和名称 -->
-                <view class="flex mb-2">
-                  <view class="w-16 h-16 rounded-lg overflow-hidden shadow-sm mr-3">
-                    <image v-if="test.imageUrl" :src="test.imageUrl" mode="aspectFill" class="w-full h-full" lazy-load>
-                    </image>
-                    <view v-else class="w-full h-16 flex items-center justify-center"
-                      :style="{ backgroundColor: getCategoryColor(test.category) }">
-                      <uni-icons type="person" size="28" color="#ffffff"></uni-icons>
-                    </view>
-                  </view>
-
-                  <view class="flex-1">
-                    <text class="text-base font-semibold text-gray-800 block mb-1">{{ test.name }}</text>
-                    <view class="flex items-center">
-                      <view class="px-2 py-0.5 rounded-full" :style="{
-                        backgroundColor: `${getCategoryColor(test.category)}20`,
-                        color: getCategoryColor(test.category),
-                        borderColor: getCategoryColor(test.category)
-                      }">
-                        <text class="text-xs">{{ getCategoryLabel(test.category) }}</text>
-                      </view>
-                      <view class="flex items-center ml-2">
-                        <text class="text-xs text-gray-500 ml-1">{{ formatTestCount(test.testCount) }}人测过</text>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-
-                <!-- 下部分：描述和统计 -->
-                <view>
-                  <text class="text-sm text-gray-600 block line-clamp-2 mb-2">{{ test.description }}</text>
-                  <view class="flex items-center justify-between">
-                    <view class="flex items-center">
-                      <view class="flex items-center ml-3">
-                        <uni-icons type="time" size="12" color="#6B7280"></uni-icons>
-                        <text class="text-xs text-gray-500 ml-1">{{ test.timeMinutes || 10 }}分钟</text>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </view>
+            <test-card :test="test" class="mb-4" @click="goToTestDetail(test)" @start="startTest(test)"></test-card>
           </template>
 
           <!-- 加载更多指示器 -->
@@ -134,7 +93,8 @@ export default {
       pageSize: 10,
       hasMore: true,
       isLoadingMore: false,
-      recentTest: null
+      recentTest: null,
+      refreshTriggered: false
     }
   },
   computed: {
@@ -177,6 +137,9 @@ export default {
   onLoad() {
     this.loadCategories();
     this.loadTests();
+
+    // 禁止页面滚动
+    this.disablePageScroll();
   },
   methods: {
     // 加载分类数据
@@ -266,24 +229,24 @@ export default {
 
     // 加载更多测试
     loadMoreTests() {
-      if (this.isLoadingMore || !this.hasMore) return
+      if (this.isLoadingMore || !this.hasMore || this.loading) return;
 
-      this.isLoadingMore = true
+      this.isLoadingMore = true;
 
-      // 模拟加载延迟
+      // 增加页码，加载下一页内容
+      this.page++;
+
+      // 检查是否还有更多数据
       setTimeout(() => {
-        this.page++
+        const totalItems = this.filteredTests.length;
+        this.hasMore = this.page * this.pageSize < totalItems;
+        this.isLoadingMore = false;
 
-        // 检查是否还有更多数据
-        const totalItems = Math.max(
-          this.personalityTests.length,
-          this.emotionTests.length,
-          this.commonTests.length
-        )
-
-        this.hasMore = this.page * this.pageSize < totalItems
-        this.isLoadingMore = false
-      }, 500)
+        // 如果当前页面显示的内容太少，自动加载更多
+        if (this.displayedTests.length < 5 && this.hasMore) {
+          this.loadMoreTests();
+        }
+      }, 300);
     },
 
     goToTestDetail(test) {
@@ -338,6 +301,60 @@ export default {
 
       // 重新加载数据
       this.loadTests();
+    },
+
+    startTest(test) {
+      // 直接跳转到测试页面开始测试
+      uni.navigateTo({
+        url: `/pages/test-taking/index?id=${test.id}`
+      });
+    },
+
+    // 禁止页面的滚动
+    disablePageScroll() {
+      // 禁止页面滚动行为
+      const page = getCurrentPages()[getCurrentPages().length - 1];
+      if (page && page.$getAppWebview) {
+        const webview = page.$getAppWebview();
+        if (webview && webview.setStyle) {
+          webview.setStyle({
+            bounce: 'none'
+          });
+        }
+      }
+    },
+
+    // 处理页面滚动事件
+    onPageScroll(e) {
+      // 阻止页面滚动（这个方法在真机上可能不完全有效，要依赖CSS固定布局）
+      if (e.scrollTop > 0) {
+        uni.pageScrollTo({
+          scrollTop: 0,
+          duration: 0
+        });
+      }
+    },
+
+    // 处理下拉刷新
+    onRefresh() {
+      if (this.loading) return;
+
+      this.refreshTriggered = true;
+      this.page = 1;
+
+      // 重新加载数据
+      this.loadTests().then(() => {
+        // 完成刷新
+        this.refreshTriggered = false;
+      }).catch(err => {
+        console.error('刷新数据失败:', err);
+        this.refreshTriggered = false;
+      });
+    },
+
+    // 处理刷新恢复或中止
+    onRefreshRestore() {
+      this.refreshTriggered = false;
     }
   },
   watch: {
@@ -381,5 +398,56 @@ image {
 /* 优化滚动容器 */
 scroll-view {
   -webkit-overflow-scrolling: touch;
+}
+
+/* 固定布局样式 */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  background-color: #FFFFFF;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.category-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  background-color: #F9FAFB;
+  border-right: 1px solid #F3F4F6;
+  z-index: 10;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.test-list-container {
+  flex: 1;
+  margin-left: 80px;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+/* 安全区域适配 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .page-container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 </style>

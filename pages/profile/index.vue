@@ -34,48 +34,11 @@
         </view>
       </view>
 
-      <!-- 我的成长 -->
-      <view class="bg-white rounded-xl p-5 shadow-sm mb-6">
-        <view class="flex justify-between items-center mb-4">
-          <text class="font-bold text-gray-800">我的成长</text>
-        </view>
-
-        <view class="flex items-center justify-between">
-          <view class="flex items-center">
-            <view class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-              <uni-icons type="medal" size="20" color="#3B82F6"></uni-icons>
-            </view>
-            <view>
-              <text class="font-medium text-gray-800">成长徽章</text>
-              <text class="text-xs text-gray-500 block">已获得3个徽章</text>
-            </view>
-          </view>
-          <view class="px-3 py-1 bg-blue-100 rounded-full">
-            <text class="text-xs text-blue-600">查看</text>
-          </view>
-        </view>
-      </view>
 
       <!-- 设置列表 -->
       <view class="bg-white rounded-xl shadow-sm mb-6">
         <view class="p-4 border-b border-gray-100">
           <text class="font-bold text-gray-800">设置</text>
-        </view>
-
-        <view class="p-4 flex items-center border-b border-gray-100">
-          <view class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-            <uni-icons type="bell" size="18" color="#8B5CF6"></uni-icons>
-          </view>
-          <text class="text-gray-800">提醒设置</text>
-          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
-        </view>
-
-        <view class="p-4 flex items-center border-b border-gray-100">
-          <view class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <uni-icons type="eye" size="18" color="#3B82F6"></uni-icons>
-          </view>
-          <text class="text-gray-800">隐私设置</text>
-          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
         </view>
 
         <view class="p-4 flex items-center border-b border-gray-100" @tap="navigateToBackgroundSetting">
@@ -91,22 +54,6 @@
             <uni-icons type="phone" size="18" color="#EF4444"></uni-icons>
           </view>
           <text class="text-gray-800">紧急联系人</text>
-          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
-        </view>
-
-        <view class="p-4 flex items-center border-b border-gray-100">
-          <view class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-            <uni-icons type="help" size="18" color="#10B981"></uni-icons>
-          </view>
-          <text class="text-gray-800">帮助中心</text>
-          <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
-        </view>
-
-        <view class="p-4 flex items-center">
-          <view class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-            <uni-icons type="gear" size="18" color="#6B7280"></uni-icons>
-          </view>
-          <text class="text-gray-800">通用设置</text>
           <uni-icons type="right" size="16" color="#9CA3AF" class="ml-auto"></uni-icons>
         </view>
       </view>
