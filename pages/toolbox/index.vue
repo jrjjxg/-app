@@ -109,7 +109,7 @@
 
         <!-- 情绪支持卡片 -->
         <view class="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 overflow-hidden">
-          <view @tap="navigateTo('/pages/chatbot/index')" class="flex items-center p-4 active:bg-gray-50">
+          <view @tap="navigateTo('/pages/chatbot/threads')" class="flex items-center p-4 active:bg-gray-50">
             <view class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3">
               <uni-icons type="chat" size="24" color="#3B82F6"></uni-icons>
             </view>

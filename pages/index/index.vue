@@ -164,7 +164,7 @@
         <!-- 支持工具卡片组 -->
         <view class="grid grid-cols-2 gap-3">
           <!-- AI聊天 -->
-          <view @tap="navigateTo('/pages/chatbot/index')"
+          <view @tap="navigateTo('/pages/chatbot/threads')"
             class="bg-white rounded-xl p-4 flex items-center shadow-sm border border-gray-100 active:bg-gray-50">
             <view class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
               <uni-icons type="chat" size="20" color="#3B82F6"></uni-icons>
@@ -176,14 +176,14 @@
           </view>
 
           <!-- 社区 -->
-          <view @tap="navigateTo('/pages/community/index')"
+          <view @tap="navigateTo('/pages/social-hub/index')"
             class="bg-white rounded-xl p-4 flex items-center shadow-sm border border-gray-100 active:bg-gray-50">
             <view class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
               <uni-icons type="staff" size="20" color="#8B5CF6"></uni-icons>
             </view>
             <view>
-              <text class="text-sm text-gray-800 font-medium">社区圈子</text>
-              <text class="text-xs text-gray-500 block">分享与共鸣</text>
+              <text class="text-sm text-gray-800 font-medium">情绪社交</text>
+              <text class="text-xs text-gray-500 block">分享与匿名互动</text>
             </view>
           </view>
 

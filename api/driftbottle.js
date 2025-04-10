@@ -27,9 +27,9 @@ export const replyBottle = (data) => {
 };
 
 // 获取漂流瓶详情
-export const getBottleDetail = (bottleId) => {
+export const getBottleDetail = (id) => {
   return request({
-    url: `/api/driftbottle/detail/${bottleId}`,
+    url: `/api/driftbottle/${id}`,
     method: 'GET'
   });
 };
@@ -65,6 +65,32 @@ export const getPendingAuditBottles = (pageNum = 1, pageSize = 10) => {
 export const auditBottle = (data) => {
   return request({
     url: '/api/admin/driftbottle/audit',
+    method: 'POST',
+    data
+  });
+};
+
+// 获取我的漂流瓶列表
+export const getMyBottles = (params) => {
+  return request({
+    url: '/api/driftbottle/my',
+    method: 'GET',
+    params
+  });
+};
+
+// 删除漂流瓶
+export const deleteBottle = (id) => {
+  return request({
+    url: `/api/driftbottle/${id}`,
+    method: 'DELETE'
+  });
+};
+
+// 举报漂流瓶
+export const reportBottle = (data) => {
+  return request({
+    url: '/api/driftbottle/report',
     method: 'POST',
     data
   });

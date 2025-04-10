@@ -182,7 +182,7 @@ export default {
             this.loading = true
             try {
                 // 获取冥想分类的音频（仍使用视频API）
-                const res = await videoApi.getVideosByCategory(this.categoryId)
+                const res = await media.getMediaByCategory(this.categoryId)
                 if (res.code === 200 && res.data) {
                     this.audioList = res.data
 
