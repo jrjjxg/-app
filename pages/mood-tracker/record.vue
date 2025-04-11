@@ -21,6 +21,15 @@
       <!-- 情绪选择 -->
       <emotion-picker v-model="selectedEmotion"></emotion-picker>
 
+      <!-- 语音情绪分析 -->
+      <view class="flex items-center justify-center my-4">
+        <button class="flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-600 rounded-xl"
+          @click="showVoiceRecorder">
+          <uni-icons type="mic" size="16" color="#2563EB" class="mr-2"></uni-icons>
+          <text>通过语音分析情绪</text>
+        </button>
+      </view>
+
       <!-- 情绪强度 -->
       <intensity-slider v-model="intensity" :emotionType="selectedEmotion"></intensity-slider>
 
@@ -59,12 +68,27 @@
         {{ submitting ? '提交中...' : '记录我的心情' }}
       </button>
     </view>
+    
+    <!-- 语音录制弹窗 -->
+    <uni-popup ref="voicePopup" type="center">
+      <view class="bg-white rounded-xl w-90vw max-w-lg p-4">
+        <view class="flex justify-between items-center mb-4">
+          <text class="text-lg font-medium">语音情绪分析</text>
+          <uni-icons type="closeempty" size="20" @click="closeVoiceRecorder"></uni-icons>
+        </view>
+        <voice-recorder 
+          :moodId="moodId" 
+          @recording-result="handleVoiceResult"
+        ></voice-recorder>
+      </view>
+    </uni-popup>
   </view>
 </template>
 
 <script>
 import EmotionPicker from '@/components/mood-components/emotion-picker.vue';
 import IntensitySlider from '@/components/mood-components/intensity-slider.vue';
+import VoiceRecorder from '@/components/voice/voice-recorder.vue';
 import { createMoodRecord } from '@/api/mood.js';
 import { formatDateToChinese } from '@/utils/dateUtils.js';
 
@@ -74,7 +98,8 @@ let submitTimer = null;
 export default {
   components: {
     EmotionPicker,
-    IntensitySlider
+    IntensitySlider,
+    VoiceRecorder
   },
   data() {
     return {
@@ -85,7 +110,8 @@ export default {
       commonTags: ['工作/学习', '人际关系', '健康状况', '休息质量', '天气变化', '个人成就'],
       customTag: '',
       showCustomTagInput: false,
-      submitting: false
+      submitting: false,
+      moodId: ''
     }
   },
   computed: {
@@ -98,6 +124,11 @@ export default {
     if (submitTimer) {
       clearTimeout(submitTimer);
       submitTimer = null;
+    }
+  },
+  onLoad(option) {
+    if (option.id) {
+      this.moodId = option.id;
     }
   },
   methods: {
@@ -118,6 +149,87 @@ export default {
         this.customTag = '';
         this.showCustomTagInput = false;
       }
+    },
+
+    // 显示语音录制弹窗
+    showVoiceRecorder() {
+      // 检查浏览器是否支持录音功能
+      // #ifdef H5
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        uni.showToast({
+          title: '您的浏览器不支持录音功能',
+          icon: 'none'
+        });
+        return;
+      }
+      // #endif
+      
+      // 请求录音权限
+      // #ifdef H5
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(() => {
+          this.$refs.voicePopup.open();
+        })
+        .catch(err => {
+          console.error('获取麦克风权限失败', err);
+          uni.showToast({
+            title: '未获得录音权限',
+            icon: 'none'
+          });
+        });
+      // #endif
+      
+      // #ifndef H5
+      uni.authorize({
+        scope: 'scope.record',
+        success: () => {
+          this.$refs.voicePopup.open();
+        },
+        fail: () => {
+          uni.showToast({
+            title: '未获得录音权限',
+            icon: 'none'
+          });
+        }
+      });
+      // #endif
+    },
+    
+    // 关闭语音录制弹窗
+    closeVoiceRecorder() {
+      this.$refs.voicePopup.close();
+    },
+    
+    // 处理语音分析结果
+    handleVoiceResult(result) {
+      if (result && result.dominantEmotion) {
+        // 根据分析结果设置情绪类型
+        this.selectedEmotion = this.mapDominantEmotionToUI(result.dominantEmotion);
+        
+        // 如果有转写文本，则设置为备注
+        if (result.transcription) {
+          this.note = result.transcription;
+        }
+        
+        // 关闭弹窗
+        this.closeVoiceRecorder();
+      }
+    },
+    
+    // 将API返回的情绪映射到UI可用的情绪类型
+    mapDominantEmotionToUI(dominantEmotion) {
+      // 根据你的实际情况映射情绪类型
+      const emotionMap = {
+        'HAPPY': 'happy',
+        'SAD': 'sad',
+        'ANGRY': 'angry',
+        'FEAR': 'fear',
+        'SURPRISE': 'surprise',
+        'NEUTRAL': 'neutral'
+        // 根据需要添加更多映射
+      };
+      
+      return emotionMap[dominantEmotion] || 'neutral';
     },
 
     async submitMoodRecord() {
