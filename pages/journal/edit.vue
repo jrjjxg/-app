@@ -52,10 +52,16 @@
                 <view class="flex justify-between items-center mb-3">
                     <text
                         class="relative pl-3 text-sm font-medium text-gray-700 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-1 before:bg-green-500 before:rounded-sm">今日记录</text>
-                    <view class="flex items-center px-2.5 py-1 rounded-full text-xs text-gray-600 bg-black/5"
-                        @tap="showThemePicker">
-                        <text>{{ getThemeName(selectedTheme) }}</text>
-                        <uni-icons type="right" size="12" color="#4B5563" class="ml-1"></uni-icons>
+                    <view class="flex items-center">
+                        <view class="px-2.5 py-1 rounded-full text-xs text-gray-600 bg-black/5 mr-2" @tap="showVoiceRecorder">
+                            <uni-icons type="mic" size="14" color="#4B5563" class="mr-1"></uni-icons>
+                            <text>语音输入</text>
+                        </view>
+                        <view class="px-2.5 py-1 rounded-full text-xs text-gray-600 bg-black/5"
+                            @tap="showThemePicker">
+                            <text>{{ getThemeName(selectedTheme) }}</text>
+                            <uni-icons type="right" size="12" color="#4B5563" class="ml-1"></uni-icons>
+                        </view>
                     </view>
                 </view>
 
@@ -112,6 +118,20 @@
 
         <!-- 心情选择器模态框 -->
         <mood-picker-modal v-if="showMoodModal" @select="linkMood" @close="closeMoodPicker" />
+        
+        <!-- 语音录制模态框 -->
+        <uni-popup ref="voicePopup" type="center">
+            <view class="bg-white rounded-xl w-90vw max-w-lg p-4">
+                <view class="flex justify-between items-center mb-4">
+                    <text class="text-lg font-medium">语音录制</text>
+                    <uni-icons type="closeempty" size="20" @click="closeVoiceRecorder"></uni-icons>
+                </view>
+                <voice-recorder 
+                    :journalId="journalId" 
+                    @recording-result="handleVoiceResult"
+                ></voice-recorder>
+            </view>
+        </uni-popup>
     </view>
 </template>
 
@@ -120,6 +140,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import ThemePickerModal from '@/components/journal/ThemePickerModal.vue';
 import MoodPickerModal from '@/components/mood/MoodPickerModal.vue';
+import VoiceRecorder from '@/components/voice/voice-recorder.vue';
 import { formatDate, formatTime } from '@/utils/timeUtil';
 import { saveJournal as apiSaveJournal, getJournalDetail } from '@/api/journal';
 import { analyzeText } from '@/api/emotion';
@@ -431,6 +452,78 @@ const goBack = () => {
             if (res.confirm) {
                 uni.navigateBack();
             }
+        }
+    });
+};
+
+// 语音录制模态框
+const voicePopup = ref(null);
+const handleVoiceResult = (result) => {
+    if (result && result.transcription) {
+        // 将语音转写文本添加到日记内容
+        journal.content += (journal.content ? '\n\n' : '') + result.transcription;
+        wordCount.value = journal.content.length;
+        
+        // 如果有情感分析结果，可以设置日记的情感
+        if (result.dominantEmotion) {
+            // 这里可以添加根据情感分析结果影响日记情感分析的逻辑
+            // 例如: journal.emotionType = result.dominantEmotion;
+        }
+    }
+    closeVoiceRecorder();
+};
+const closeVoiceRecorder = () => {
+    uni.hideLoading();
+    if (voicePopup.value) {
+        voicePopup.value.close();
+    }
+};
+const showVoiceRecorder = () => {
+    // 检查平台兼容性
+    // #ifdef H5
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        uni.showToast({
+            title: '您的浏览器不支持录音功能',
+            icon: 'none'
+        });
+        return;
+    }
+    
+    // 请求麦克风权限
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(() => {
+            if (voicePopup.value) {
+                voicePopup.value.open();
+            }
+        })
+        .catch(err => {
+            console.error('获取麦克风权限失败', err);
+            uni.showToast({
+                title: '未获得录音权限',
+                icon: 'none'
+            });
+        });
+    return;
+    // #endif
+    
+    // 原生平台
+    uni.showLoading({ title: '准备录音功能...' });
+    
+    // 请求录音权限
+    uni.authorize({
+        scope: 'scope.record',
+        success: function() {
+            uni.hideLoading();
+            if (voicePopup.value) {
+                voicePopup.value.open();
+            }
+        },
+        fail: function() {
+            uni.hideLoading();
+            uni.showToast({
+                title: '未获得录音权限',
+                icon: 'none'
+            });
         }
     });
 };
