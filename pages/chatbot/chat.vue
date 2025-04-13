@@ -36,8 +36,9 @@
 
                     <!-- 机器人消息 -->
                     <view v-else-if="message.role === 'assistant'" class="flex justify-start">
-                        <view class="bg-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm">
-                            <text class="text-gray-800">{{ message.content }}</text>
+                        <view
+                            class="bg-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] shadow-sm markdown-message">
+                            <markdown-renderer :content="message.content"></markdown-renderer>
                         </view>
                     </view>
 
@@ -132,8 +133,12 @@
 
 <script>
 import { sendMessage, getChatHistory, sendMessageStream, updateSystemPrompt } from '@/api/chatbot.js'
+import MarkdownRenderer from '@/components/markdown-renderer.vue'
 
 export default {
+    components: {
+        MarkdownRenderer
+    },
     data() {
         return {
             threadId: '',
@@ -209,6 +214,8 @@ export default {
 
             const userMessage = this.inputMessage.trim()
             this.inputMessage = ''
+            const debugId = Math.random().toString(36).substring(2, 10)
+            console.log(`[Chat-${debugId}] 发送消息: ${userMessage.substring(0, 30)}...`)
 
             // 添加用户消息
             const userMsgId = 'msg-' + Date.now()
@@ -236,36 +243,38 @@ export default {
             this.isLoading = true
 
             try {
+                console.log(`[Chat-${debugId}] 调用sendMessageStream`)
                 // 使用流式API
                 sendMessageStream(this.threadId, userMessage, {
                     onStart: (data) => {
-                        console.log('开始接收消息流', data)
+                        console.log(`[Chat-${debugId}] 流开始:`, data)
                     },
                     onChunk: (data) => {
                         // 检查是否是中断消息
                         if (data.type === 'interrupt') {
-                            // 保存待处理确认信息
-                            this.pendingConfirmation = {
-                                threadId: this.threadId,
-                                userId: uni.getStorageSync('userUserName') || 'default_user'
-                            }
-                            // 显示确认对话框
-                            this.showConfirmDialog(data.message)
+                            console.log(`[Chat-${debugId}] 收到中断消息:`, data.message)
+                            // 处理中断...
                             return
                         }
 
                         // 更新助手消息内容
                         const msgIndex = this.messages.findIndex(m => m.id === assistantMsgId)
                         if (msgIndex !== -1) {
-                            this.messages[msgIndex].content += data.chunk
+                            const oldLength = this.messages[msgIndex].content.length
+                            const newChunk = data.chunk || ''
+                            const newLength = oldLength + newChunk.length
+                            console.log(`[Chat-${debugId}] 更新消息: ${oldLength} -> ${newLength}`)
+                            this.messages[msgIndex].content += newChunk
                             this.$nextTick(() => {
                                 this.scrollToBottom()
                             })
+                        } else {
+                            console.error(`[Chat-${debugId}] 未找到消息:`, assistantMsgId)
                         }
                     },
                     onComplete: (data) => {
                         this.isLoading = false
-                        console.log('消息流接收完成', data)
+                        console.log(`[Chat-${debugId}] 流完成, 响应长度:`, data.full_response ? data.full_response.length : 0)
 
                         // 保存完整消息到历史记录
                         setTimeout(() => {
@@ -274,7 +283,20 @@ export default {
                     },
                     onError: (error) => {
                         this.isLoading = false
-                        console.error('流式消息接收错误', error)
+                        console.error(`[Chat-${debugId}] 流式消息错误:`, error)
+
+                        // 添加错误处理逻辑
+                        const msgIndex = this.messages.findIndex(m => m.id === assistantMsgId)
+                        if (msgIndex !== -1) {
+                            // 如果当前没有内容，显示错误信息
+                            if (!this.messages[msgIndex].content) {
+                                this.messages[msgIndex].content = '抱歉，处理消息时出错。请稍后重试。'
+                            } else {
+                                // 已有部分内容，显示处理中断提示
+                                this.messages[msgIndex].content += '\n\n[消息处理中断]'
+                            }
+                        }
+
                         uni.showToast({
                             title: '接收消息失败',
                             icon: 'none'
@@ -283,7 +305,7 @@ export default {
                 })
             } catch (error) {
                 this.isLoading = false
-                console.error('发送消息失败', error)
+                console.error(`[Chat-${debugId}] 发送消息异常:`, error)
                 uni.showToast({
                     title: '发送消息失败',
                     icon: 'none'
@@ -456,6 +478,13 @@ export default {
 
 .dot:nth-child(3) {
     animation-delay: 0.4s;
+}
+
+/* Markdown消息样式优化 */
+.markdown-message {
+    width: auto;
+    min-width: 50%;
+    padding: 12px 16px;
 }
 
 @keyframes bounce {

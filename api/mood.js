@@ -97,3 +97,15 @@ export const generateMoodShareCard = (startDate, endDate) => {
     }
   });
 };
+
+// 获取周情绪统计
+export const getWeeklyMoodStats = () => {
+  const userId = uni.getStorageSync('userId') || '1';
+  return request({
+    url: '/api/moods/weekly-mood',
+    method: 'GET',
+    header: {
+      'userId': userId
+    }
+  });
+};

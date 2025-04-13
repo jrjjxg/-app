@@ -111,32 +111,68 @@ export function deleteThread(threadId) {
 
 export function sendMessageStream(threadId, message, callbacks) {
   const userId = uni.getStorageSync('userUserName') || 'default_user'
-  const BASE_URL = 'http://localhost:5000'
+  const debugId = Math.random().toString(36).substring(2, 10)
   
-  // 将消息作为参数添加到URL中，确保正确编码
+  console.log(`[FE-${debugId}] 开始发送流式请求: threadId=${threadId}`)
+  
+  const BASE_URL = 'http://localhost:5000'
   const encodedMessage = encodeURIComponent(message)
   const url = `${BASE_URL}/api/chat/stream?threadId=${threadId}&userId=${userId}&message=${encodedMessage}`
   
-  // 创建EventSource连接（现在GET请求包含message参数）
-  const eventSource = new EventSource(url)
+  console.log(`[FE-${debugId}] 请求URL: ${url}`)
   
-  // 事件监听器...
+  // 创建EventSource连接
+  const eventSource = new EventSource(url)
+  console.log(`[FE-${debugId}] EventSource已创建`)
+  
+  // 添加open事件监听
+  eventSource.onopen = function(event) {
+    console.log(`[FE-${debugId}] EventSource连接已打开`)
+  }
+  
   eventSource.addEventListener('start', event => {
-    if (callbacks.onStart) callbacks.onStart(JSON.parse(event.data))
+    console.log(`[FE-${debugId}] 收到start事件: ${event.data}`)
+    try {
+      const data = JSON.parse(event.data)
+      if (callbacks.onStart) callbacks.onStart(data)
+    } catch (error) {
+      console.error(`[FE-${debugId}] 解析start事件数据失败:`, error, event.data)
+    }
   })
   
   eventSource.addEventListener('chunk', event => {
-    if (callbacks.onChunk) callbacks.onChunk(JSON.parse(event.data))
+    try {
+      const data = JSON.parse(event.data)
+      console.log(`[FE-${debugId}] 收到chunk: 长度=${data.chunk ? data.chunk.length : 0}`)
+      if (callbacks.onChunk) callbacks.onChunk(data)
+    } catch (error) {
+      console.error(`[FE-${debugId}] 解析chunk事件数据失败:`, error, event.data)
+    }
   })
   
   eventSource.addEventListener('complete', event => {
-    if (callbacks.onComplete) callbacks.onComplete(JSON.parse(event.data))
+    console.log(`[FE-${debugId}] 收到complete事件`)
+    try {
+      const data = JSON.parse(event.data)
+      if (callbacks.onComplete) callbacks.onComplete(data)
+    } catch (error) {
+      console.error(`[FE-${debugId}] 解析complete事件数据失败:`, error)
+    }
+    console.log(`[FE-${debugId}] 关闭EventSource连接`)
     eventSource.close()
   })
   
+  eventSource.addEventListener('error', event => {
+    console.error(`[FE-${debugId}] 收到error事件:`, event)
+    if (callbacks.onError) callbacks.onError(event)
+  })
+  
   eventSource.onerror = error => {
-    console.error("EventSource错误:", error)
+    console.error(`[FE-${debugId}] EventSource错误:`, error)
+    // 尝试检查readyState
+    console.error(`[FE-${debugId}] EventSource readyState: ${eventSource.readyState}`)
     if (callbacks.onError) callbacks.onError(error)
+    console.log(`[FE-${debugId}] 由于错误关闭EventSource连接`)
     eventSource.close()
   }
   

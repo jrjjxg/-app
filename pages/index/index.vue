@@ -94,24 +94,14 @@
         </view>
 
         <!-- 情绪趋势图 -->
-        <view class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
+        <view class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <view class="flex justify-between items-center mb-3">
-            <text class="font-medium text-gray-700">近期情绪趋势</text>
-            <text class="text-xs text-gray-500">最近7天</text>
+            <text class="text-lg font-medium">近期情绪趋势</text>
+            <navigator url="/pages/mood-tracker/analysis" open-type="navigate" hover-class="none">
+              <text class="text-sm text-blue-500">查看全部 ></text>
+            </navigator>
           </view>
-          <view class="h-32 w-full">
-            <!-- 这里可以引入图表组件，如果有的话 -->
-            <view v-if="!moodTrendData.length" class="h-full flex items-center justify-center">
-              <text class="text-gray-400 text-xs">暂无数据，请先记录情绪</text>
-            </view>
-            <view v-else class="h-full flex items-end justify-between">
-              <view v-for="(item, index) in moodTrendData" :key="index" class="flex flex-col items-center flex-1">
-                <view class="w-6 bg-blue-400 rounded-t-md mb-1"
-                  :style="{ height: (item.level / 100 * 80) + 'px', backgroundColor: getEmotionColor(item.type) }"></view>
-                <text class="text-gray-400 text-[10px]">{{ item.day }}</text>
-              </view>
-            </view>
-          </view>
+          <weekly-mood-chart :height="180"></weekly-mood-chart>
         </view>
 
         <!-- 关键词云小组件 -->
@@ -217,7 +207,12 @@
 </template>
 
 <script>
+import WeeklyMoodChart from '@/components/mood/weekly-mood-chart.vue';
+
 export default {
+  components: {
+    WeeklyMoodChart,
+  },
   data() {
     return {
       todayMood: {
